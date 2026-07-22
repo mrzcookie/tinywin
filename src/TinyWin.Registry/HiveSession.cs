@@ -38,9 +38,10 @@ internal sealed class HiveSession(INativeRegistry native, HiveUnloadPolicy polic
         {
             ActionType.SetRegistry => ApplySetRegistry(componentId, action),
             ActionType.DeleteRegistryKey => ApplyDeleteRegistryKey(componentId, action),
+            ActionType.RemoveScheduledTask => ApplyRemoveScheduledTask(componentId, action),
             _ => throw new RegistryActionException(
                 $"Component '{componentId}' routed a '{action.Type}' action to the registry engine, which only "
-                + "handles setRegistry and deleteRegistryKey."),
+                + "handles setRegistry, deleteRegistryKey and removeScheduledTask."),
         });
     }
 
@@ -124,17 +125,80 @@ internal sealed class HiveSession(INativeRegistry native, HiveUnloadPolicy polic
         return native.DeleteKeyTree(keyPath) ? ActionStatus.Applied : ActionStatus.NoTarget;
     }
 
+    /// <summary>
+    /// Removes a scheduled task by unregistering it from <c>TaskCache</c>, which on an offline
+    /// image is where the task actually lives — see <see cref="TaskCache"/> and
+    /// docs/catalog-gaps.md section 3.1.
+    /// </summary>
+    /// <remarks>
+    /// One catalog action produces one outcome, which is the reason this lives here rather than
+    /// being composed by Core out of smaller registry primitives. Composing it would mean exposing
+    /// a hive read on <see cref="IHiveSession"/> just to fetch the task's GUID, and it would report
+    /// a half-removed task as several contradictory outcomes instead of one honest status.
+    /// </remarks>
+    private ActionStatus ApplyRemoveScheduledTask(string componentId, ComponentAction action)
+    {
+        // The registration is always in SOFTWARE; the catalog does not (and should not) name a
+        // hive for a task action.
+        var hive = action.Hive ?? RegistryHive.Software;
+        RequireLoaded(componentId, hive);
+
+        if (hive != RegistryHive.Software)
+        {
+            throw new RegistryActionException(
+                $"Component '{componentId}': scheduled tasks are registered in the Software hive, not {hive}.");
+        }
+
+        var mountName = HiveLayout.MountName(hive);
+        string taskName;
+        try
+        {
+            taskName = TaskCache.NormalizeTaskName(action.Name);
+        }
+        catch (RegistryActionException ex)
+        {
+            throw new RegistryActionException($"Component '{componentId}': {ex.Message}", ex);
+        }
+
+        var treePath = RegistryKeyPath.UnderMount(mountName, TaskCache.TreePath(taskName));
+        if (!native.KeyExists(treePath))
+        {
+            // The task was never registered on this media. Exactly the case docs/PLAN.md section
+            // 2.1 wants counted rather than reported as a successful removal.
+            return ActionStatus.NoTarget;
+        }
+
+        var id = native.GetStringValue(treePath, TaskCache.IdValueName);
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            // Deleting the Tree node now would orphan the Tasks entry with nothing left pointing
+            // at it, so refuse and let the build report say why.
+            throw new RegistryActionException(
+                $"Component '{componentId}': scheduled task '{taskName}' has a TaskCache\\Tree node with no "
+                + $"'{TaskCache.IdValueName}' value, so its registration cannot be located. Refusing to delete "
+                + "half of it.");
+        }
+
+        foreach (var subkey in TaskCache.IdKeyedSubkeys)
+        {
+            // A task only appears in the trigger indexes it actually uses, so a miss here is
+            // normal and not a no-op worth reporting.
+            native.DeleteKeyTree(RegistryKeyPath.UnderMount(mountName, TaskCache.IdKeyedPath(subkey, id)));
+        }
+
+        // Tree last, deliberately. It is the only thing that maps a task name to its GUID, so a
+        // crash partway through leaves the Tree node still pointing at whatever remains and a
+        // re-run finishes the job. Deleting Tree first would strand the rest unreachable.
+        native.DeleteKeyTree(treePath);
+        return ActionStatus.Applied;
+    }
+
     private string ResolveKeyPath(string componentId, ComponentAction action)
     {
         var hive = action.Hive
             ?? throw new RegistryActionException($"Component '{componentId}': {Describe(action.Type)} requires 'hive'.");
 
-        if (!_loaded.Contains(hive))
-        {
-            var loaded = _loaded.Count == 0 ? "none" : string.Join(", ", _loaded);
-            throw new RegistryActionException(
-                $"Component '{componentId}' targets the {hive} hive, but this session loaded {loaded}.");
-        }
+        RequireLoaded(componentId, hive);
 
         try
         {
@@ -143,6 +207,16 @@ internal sealed class HiveSession(INativeRegistry native, HiveUnloadPolicy polic
         catch (RegistryActionException ex)
         {
             throw new RegistryActionException($"Component '{componentId}': {ex.Message}", ex);
+        }
+    }
+
+    private void RequireLoaded(string componentId, RegistryHive hive)
+    {
+        if (!_loaded.Contains(hive))
+        {
+            var loaded = _loaded.Count == 0 ? "none" : string.Join(", ", _loaded);
+            throw new RegistryActionException(
+                $"Component '{componentId}' targets the {hive} hive, but this session loaded {loaded}.");
         }
     }
 

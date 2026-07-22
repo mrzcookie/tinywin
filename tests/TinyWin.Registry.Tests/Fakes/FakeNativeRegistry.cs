@@ -94,6 +94,11 @@ internal sealed class FakeNativeRegistry : INativeRegistry
 
     public bool KeyExists(string keyPath) => _keys.ContainsKey(keyPath);
 
+    public string? GetStringValue(string keyPath, string valueName) =>
+        _keys.TryGetValue(keyPath, out var values) && values.TryGetValue(valueName, out var value)
+            ? value.Data as string
+            : null;
+
     public void CreateKey(string keyPath)
     {
         Calls.Add($"create:{keyPath}");
@@ -155,6 +160,24 @@ internal sealed class FakeNativeRegistry : INativeRegistry
         {
             _keys[keyPath][valueName] = (data ?? 1, Win32ValueKind.DWord);
         }
+    }
+
+    /// <summary>
+    /// Test helper: seeds a scheduled task registration the way a real SOFTWARE hive carries one —
+    /// a Tree node holding the GUID, plus entries under the id-keyed subkeys named.
+    /// </summary>
+    public void SeedTask(string mountName, string taskName, string id, params string[] idKeyedSubkeys)
+    {
+        var tree = $@"{mountName}\{TaskCache.TreePath(taskName)}";
+        CreateKey(tree);
+        _keys[tree][TaskCache.IdValueName] = (id, Win32ValueKind.String);
+
+        foreach (var subkey in idKeyedSubkeys)
+        {
+            CreateKey($@"{mountName}\{TaskCache.IdKeyedPath(subkey, id)}");
+        }
+
+        Calls.Clear();
     }
 
     private void RemoveSubtree(string keyPath)

@@ -124,6 +124,12 @@ internal sealed class Win32NativeRegistry : INativeRegistry
         return key is not null;
     }
 
+    public string? GetStringValue(string keyPath, string valueName)
+    {
+        using var key = OpenKey(keyPath, NativeMethods.KeyRead);
+        return key?.GetValue(valueName, null) as string;
+    }
+
     public void CreateKey(string keyPath)
     {
         var status = NativeMethods.RegCreateKeyEx(
