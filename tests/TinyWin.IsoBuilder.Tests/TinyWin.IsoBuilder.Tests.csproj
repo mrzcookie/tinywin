@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      TinyWin.IsoBuilder targets the Windows TFM (it P/Invokes virtdisk.dll to mount ISOs), so its
+      tests must too. That is why these live in their own project rather than in TinyWin.Tests,
+      which is plain net10.0.
+    -->
+    <TargetFramework>$(TinyWinWindowsTargetFramework)</TargetFramework>
+    <RootNamespace>TinyWin.IsoBuilder.Tests</RootNamespace>
+    <SupportedOSPlatformVersion>$(TinyWinSupportedOSPlatformVersion)</SupportedOSPlatformVersion>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit.v3" Version="3.1.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TinyWin.IsoBuilder\TinyWin.IsoBuilder.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Golden\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="Golden" />
+    <None Include="Fixtures\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="Fixtures" />
+  </ItemGroup>
+
+</Project>

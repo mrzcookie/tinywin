@@ -1,0 +1,36 @@
+# Golden table for CygwinPath.FromWindows.
+#
+# The vendored MSYS2 xorriso treats anything not starting with '/' as relative to its own working
+# directory, so 'C:\out\x.iso' silently becomes '<cwd>/C:\out\x.iso' and fails with a message that
+# names a path the caller never wrote. Every row here is a shape TinyWin actually passes to it.
+#
+# Format: <input> => <expected>
+# Lines starting with '#' and blank lines are ignored.
+
+C:\scratch\tree => /cygdrive/c/scratch/tree
+C:/scratch/tree => /cygdrive/c/scratch/tree
+c:\scratch\tree => /cygdrive/c/scratch/tree
+D:\ => /cygdrive/d
+Z:\out\tinywin.iso => /cygdrive/z/out/tinywin.iso
+
+# Mixed separators, as produced by Path.Combine over a config value using forward slashes.
+C:\Users\Zachary/Downloads\Win11_25H2_English_x64_v2.iso => /cygdrive/c/Users/Zachary/Downloads/Win11_25H2_English_x64_v2.iso
+
+# Spaces survive: ArgumentList quoting happens downstream, not here.
+C:\Program Files\TinyWin\tools\xorriso => /cygdrive/c/Program Files/TinyWin/tools/xorriso
+
+# Redundant separators are collapsed, trailing ones dropped.
+C:\scratch\\tree\ => /cygdrive/c/scratch/tree
+C:\scratch\tree\\ => /cygdrive/c/scratch/tree
+
+# Win32 extended-length prefixes are stripped; xorriso has no idea what they mean.
+\\?\C:\scratch\tree => /cygdrive/c/scratch/tree
+\\?\UNC\server\share\iso => //server/share/iso
+
+# UNC maps onto the MSYS2 //server/share namespace, not /cygdrive.
+\\server\share\iso => //server/share/iso
+//server/share/iso => //server/share/iso
+
+# Already POSIX: idempotent, so a value round-tripped through a xorriso report stays valid.
+/cygdrive/c/scratch/tree => /cygdrive/c/scratch/tree
+/cygdrive/c/scratch/tree/ => /cygdrive/c/scratch/tree

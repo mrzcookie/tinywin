@@ -1,0 +1,17 @@
+GNU xorriso 1.5.6 : RockRidge filesystem manipulator, libburnia project.
+
+xorriso : NOTE : Loading ISO image tree from LBA 0
+xorriso : UPDATE :      11 nodes read in 1 seconds
+xorriso : NOTE : Detected El-Torito boot information which currently is set to be discarded
+Drive current: -indev '/cygdrive/c/scratch/synth.iso'
+Media current: stdio file, overwriteable
+Media status : is written , is appendable
+Boot record  : El Torito
+Media summary: 1 session, 2433 data blocks, 4866k data,  771g free
+Volume id    : 'CCCOMA_X64FRE_EN-US_DV9'
+El Torito catalog  : 40  1
+El Torito images   :   N  Pltf  B   Emul  Ld_seg  Hdpt  Ldsiz         LBA
+El Torito boot img :   1  BIOS  y   none  0x0000  0x00      8          41
+El Torito boot img :   2  UEFI  y   none  0x0000  0x00   2880          43
+El Torito img path :   1  /boot/etfsboot.com
+El Torito img path :   2  /efi/microsoft/boot/efisys.bin

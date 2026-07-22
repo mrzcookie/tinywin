@@ -10,4 +10,10 @@
     <ProjectReference Include="..\TinyWin.Core\TinyWin.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The ISO mount and tree copier are implementation detail, but they are the parts that touch
+         real media, so the tests reach them directly rather than through an 8 GB round trip. -->
+    <InternalsVisibleTo Include="TinyWin.IsoBuilder.Tests" />
+  </ItemGroup>
+
 </Project>
