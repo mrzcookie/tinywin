@@ -294,7 +294,7 @@
         "DISM and the package manager stop working entirely on the resulting image",
         "Optional features cannot be listed, let alone enabled or disabled",
         "The image cannot be serviced offline either — a future TinyWin run against it will fail at the apply stage",
-        "Cannot be undone"
+        "Cannot be undone: nothing on the resulting image can rebuild the servicing stack"
       ],
       "actions": [
         { "type": "TakeOwnership", "path": "Windows\\servicing" },
