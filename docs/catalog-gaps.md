@@ -182,10 +182,22 @@ Stated plainly rather than guessed at.
      This is an engine concern, not a catalog one, but the catalog's no-op counts will
      look alarming until it is handled. **Flagged for TinyWin.Imaging / TinyWin.Registry.**
 
-2. **Service names** were verified against the running dev machine, which is the same
-   build (26200) but a serviced install rather than pristine media. Every service the
-   catalog touches was found present. `Fax`, `TabletInputService`, `AJRouter` and
-   `ClickToRunSvc` were probed and found absent, so nothing references them.
+2. **Service names** ~~were verified against the running dev machine~~ **are now verified
+   against the image itself** — `docs/reference/11-services.txt` is an elevated dump of
+   `ControlSet001\Services` from the real offline SYSTEM hive.
+
+   **23 of the catalog's 25 `DisableService` names are confirmed present.** The two that are
+   not — `MicrosoftEdgeElevationService` (installed by Edge's own installer, not part of the
+   base image) and `Sense` (Defender for Endpoint, enterprise-only) — were already
+   `optional: true`, so they report `NoTarget` quietly. No change was needed.
+
+   This one held up, unlike the scheduled-task claim in §1 above. Worth noting *why*: services
+   the base image ships are in the hive whether or not they have ever run, so a serviced install
+   and pristine media agree about them. Scheduled tasks are registered at OOBE, so they do not.
+   The distinction is what made one inference sound and the other wrong.
+
+   `Fax`, `TabletInputService`, `AJRouter` and `ClickToRunSvc` were probed and found absent, so
+   nothing references them.
 
 3. **Registry policy values** could not be verified at all — the SOFTWARE and NTUSER
    hives cannot be loaded without `reg load`, which needs elevation. Every registry
