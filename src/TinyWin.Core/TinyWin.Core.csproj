@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(TinyWinTargetFramework)</TargetFramework>
+    <RootNamespace>TinyWin.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TinyWin.Catalog\TinyWin.Catalog.csproj" />
+  </ItemGroup>
+
+</Project>
