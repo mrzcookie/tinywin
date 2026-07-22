@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(TinyWinWindowsTargetFramework)</TargetFramework>
+    <RootNamespace>TinyWin.Cli</RootNamespace>
+    <AssemblyName>tinywin</AssemblyName>
+    <SupportedOSPlatformVersion>$(TinyWinSupportedOSPlatformVersion)</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TinyWin.Core\TinyWin.Core.csproj" />
+    <ProjectReference Include="..\TinyWin.Catalog\TinyWin.Catalog.csproj" />
+    <ProjectReference Include="..\TinyWin.Imaging\TinyWin.Imaging.csproj" />
+    <ProjectReference Include="..\TinyWin.Registry\TinyWin.Registry.csproj" />
+    <ProjectReference Include="..\TinyWin.IsoBuilder\TinyWin.IsoBuilder.csproj" />
+    <ProjectReference Include="..\TinyWin.Unattend\TinyWin.Unattend.csproj" />
+  </ItemGroup>
+
+</Project>
