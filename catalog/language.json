@@ -42,8 +42,7 @@
         "Searching for text inside scanned images and PDFs stops finding matches"
       ],
       "actions": [
-        { "type": "RemoveCapability", "name": "Language.OCR~~~en-US~0.0.1.0", "optional": true },
-        { "type": "RemoveCapability", "name": "Windows.WinOcr~~~~0.0.1.0", "optional": true }
+        { "type": "RemoveCapability", "name": "Language.OCR~~~en-US~0.0.1.0", "optional": true }
       ]
     },
     {

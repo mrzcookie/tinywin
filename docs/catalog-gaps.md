@@ -101,16 +101,31 @@ Features. WordPad and Fax/Scan are omitted for the same reason as above.
 
 Recorded so a future build-family bump has something to diff against.
 
-**Capabilities** (DISM form is `Name~~~~0.0.<major>.<minor>`, or
-`Name~~~<lang>~0.0.1.0` for the `Language.*` family):
+**Capabilities the catalog removes.** All declare an explicit version, so the DISM form
+`Name~~~~0.0.<major>.<minor>` — or `Name~~~en-US~0.0.1.0` for the `Language.*` family —
+is derivable:
 
 `App.StepsRecorder` 1.0 · `Browser.InternetExplorer` 11.0 · `Language.Handwriting` 1.0 ·
 `Language.OCR` 1.0 · `Language.Speech` 1.0 · `Language.TextToSpeech` 1.0 ·
-`MathRecognizer` 1.0 · `Media.WindowsMediaPlayer` 12.0 · `Microsoft.Windows.PowerShell.ISE` 1.0 ·
-`OpenSSH.Client` 1.0 · `Print.Management.Console` 1.0 · `Edge.Webview2.Platform` ·
-`Windows.WinOcr` · `Windows.TerminalServices.AppServerClient` · `Windows.Telnet.Client` ·
-`Windows.TFTP.Client` · `Windows.SimpleTCP.Content` · `Windows.SmbDirect` ·
-`Windows.WorkFolders.Client` · `NetFX3` · `WMIC` · `VBSCRIPT`
+`MathRecognizer` 1.0 · `Media.WindowsMediaPlayer` 12.0 ·
+`Microsoft.Windows.PowerShell.ISE` 1.0 · `OpenSSH.Client` 1.0 ·
+`Print.Management.Console` 1.0
+
+**Capabilities present but not removed by the catalog**, either because they carry no
+version (see §4.4) or because nothing should remove them:
+
+`Edge.Webview2.Platform` · `Windows.WinOcr` · `Windows.TerminalServices.AppServerClient` ·
+`Windows.Telnet.Client` · `Windows.TFTP.Client` · `Windows.SimpleTCP.Content` ·
+`Windows.SmbDirect` · `Windows.WorkFolders.Client` · `NetFX3` · `WMIC` · `VBSCRIPT` ·
+`Client.WOW64` · `Language.Basic` · `Language.UI.Client` · `Hello.Face.20134` ·
+`DirectX.Configuration.Database` · `Microsoft.Windows.Notepad.System` ·
+`OneCoreUAP.OneSync` · `Windows.Kernel.LA57` · the 22 `Microsoft.Windows.Wifi.Client.*`
+and `Microsoft.Windows.Ethernet.Client.*` driver capabilities
+
+Note that `Windows.Telnet.Client`, `Windows.TFTP.Client`, `Windows.SimpleTCP.Content`,
+`Windows.SmbDirect` and `Windows.WorkFolders.Client` exist as *both* a capability and an
+optional feature. `features.legacynet` targets the feature, which is the form that
+actually toggles them.
 
 **Optional features**, each confirmed declared by a specific manifest:
 
@@ -167,7 +182,45 @@ Stated plainly rather than guessed at.
    from tiny11builder, not from the image. Registry actions are the least-verified part
    of this catalog. A single elevated pass with the image mounted would settle them.
 
-4. **`estimatedSavingsMb` for capability and feature components** is approximate.
+4. **Three capabilities have no derivable DISM name.** `Edge.Webview2.Platform`,
+   `Windows.WinOcr` and `Windows.TerminalServices.AppServerClient` are declared in the
+   manifests **without a `version` attribute**, unlike the other 72. DISM identifies a
+   capability as `Name~PublicKeyToken~Arch~Language~Version`, and with no version to read
+   there is no way to construct that string without running `/Get-Capabilities` against a
+   mounted image. Rather than guess a version and ship an action that silently matches
+   nothing, **the three `RemoveCapability` actions were dropped**:
+   - `apps.edge.webview2` still deletes both WebView2 directories, which is the removal
+     that actually matters.
+   - `language.ocr` still removes `Language.OCR~~~en-US~0.0.1.0`, which is verified.
+   - `features.remotedesktop` still stops `TermService` and sets `fDenyTSConnections`.
+
+   One elevated `dism /Get-Capabilities` run would resolve all three.
+
+5. **Language components are en-US only.** The `Language.*` capabilities on this media are
+   declared `language="en-us"` and the catalog hard-codes `~~~en-US~`. On media in another
+   language every entry in `language.json` no-ops. The schema has no way to say "whatever
+   language this image is", and the resolver has no access to the inspected image language
+   at catalog-load time, so this is left as a known limitation rather than worked around.
+   **Flagged for TinyWin.Catalog / TinyWin.Core** — the plan resolver already takes a
+   target build, and taking a target language alongside it would fix this.
+
+6. **`RemovePackage` names are version-less prefixes.** Entries use
+   `UserExperience-Recall-Package~31bf3856ad364e35~amd64~~` with no trailing version,
+   following the seed catalog's convention. Package versions differ by patch level — this
+   media carries *two* installed versions of `UserExperience-Recall-Package`, at
+   `10.0.26100.1591` and `10.0.26100.8036` — so pinning one would break on any other
+   media. **The executor must prefix-match and remove every matching version**, not expect
+   an exact identity. Flagged for TinyWin.Imaging.
+
+7. **Offline SYSTEM hive uses `ControlSet001`, not `CurrentControlSet`.**
+   `system.deviceencryption` and `features.remotedesktop` write to
+   `ControlSet001\Control\...` because `CurrentControlSet` is a runtime symlink that does
+   not exist in an offline hive. This is correct for every image observed, but an image
+   whose last boot selected a different control set would need `ControlSet002`. Not
+   expressible in the schema; the value is read from `Select\Current` at hive-load time,
+   which is a TinyWin.Registry concern.
+
+8. **`estimatedSavingsMb` for capability and feature components** is approximate.
    Payloads for those live in WinSxS under abbreviated directory names
    (`amd64_microsoft-windows-i..ttings.resources_...`), so per-feature attribution by
    name is unreliable. App and directory components use exact measured sizes; feature
@@ -175,7 +228,7 @@ Stated plainly rather than guessed at.
 
 ---
 
-## 4. Schema gaps
+## 4. Schema gaps and unverifiable identities
 
 Per the M3 brief the C# model was not modified. These are the places where that cost
 something. None are blocking.
