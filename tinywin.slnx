@@ -9,6 +9,7 @@
     <Project Path="src/TinyWin.Unattend/TinyWin.Unattend.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/TinyWin.Imaging.Tests/TinyWin.Imaging.Tests.csproj" />
     <Project Path="tests/TinyWin.Registry.Tests/TinyWin.Registry.Tests.csproj" />
     <Project Path="tests/TinyWin.Tests/TinyWin.Tests.csproj" />
   </Folder>

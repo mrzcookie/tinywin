@@ -1,0 +1,19 @@
+
+Deployment Image Servicing and Management tool
+Version: 10.0.26100.8457
+
+Mount Directories:
+
+Mount Dir : C:\TinyWin\mount
+Image File : C:\TinyWin\work\sources\install.wim
+Image Index : 6
+Mounted Read/Write : Yes
+Status : Ok
+
+Mount Dir : C:\TinyWin\boot-mount
+Image File : C:\TinyWin\work\sources\boot.wim
+Image Index : 2
+Mounted Read/Write : Yes
+Status : Needs Remount
+
+The operation completed successfully.

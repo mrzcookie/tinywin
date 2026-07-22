@@ -1,0 +1,3 @@
+# Written by scripts/Verify-DismBackend.ps1 on an elevated machine. Deliberately untracked: these
+# are the real output to diff the checked-in samples against, not a second copy to maintain.
+captured/

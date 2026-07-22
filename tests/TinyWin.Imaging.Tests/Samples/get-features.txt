@@ -1,0 +1,45 @@
+
+Deployment Image Servicing and Management tool
+Version: 10.0.26100.8457
+
+Image Version: 10.0.26200.8037
+
+Features listing for package : Microsoft-Windows-Foundation-Package~31bf3856ad364e35~amd64~~10.0.26200.8037
+
+Feature Name : MediaPlayback
+State : Enabled
+
+Feature Name : Printing-PrintToPDFServices-Features
+State : Enabled
+
+Feature Name : Printing-XPSServices-Features
+State : Disabled
+
+Feature Name : SearchEngine-Client-Package
+State : Enabled
+
+Feature Name : SmbDirect
+State : Enabled
+
+Feature Name : TelnetClient
+State : Disabled with Payload Removed
+
+Feature Name : TFTP
+State : Disabled with Payload Removed
+
+Feature Name : WorkFolders-Client
+State : Enabled
+
+Feature Name : MicrosoftWindowsPowerShellV2
+State : Disabled
+
+Feature Name : MicrosoftWindowsPowerShellV2Root
+State : Disabled
+
+Feature Name : WindowsMediaPlayer
+State : Enabled
+
+Feature Name : Windows-Defender-Default-Definitions
+State : Disabled
+
+The operation completed successfully.
