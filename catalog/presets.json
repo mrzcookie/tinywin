@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "presets": [
+    {
+      "id": "minimal",
+      "name": "Minimal",
+      "description": "Only removals nobody misses: sponsored content, preinstalled promos, and telemetry. Fully serviceable, no behaviour changes.",
+      "order": 10,
+      "maxRisk": "Safe"
+    },
+    {
+      "id": "balanced",
+      "name": "Balanced",
+      "description": "The everyday debloat. Removes Microsoft's bundled apps, Copilot, OneDrive and Edge while leaving Windows Update, Defender and the component store intact.",
+      "order": 20,
+      "maxRisk": "Caution"
+    },
+    {
+      "id": "aggressive",
+      "name": "Aggressive",
+      "description": "Balanced plus optional features, legacy components and search indexing. Still serviceable, but assumes you know what you no longer need.",
+      "order": 30,
+      "maxRisk": "Breaking"
+    },
+    {
+      "id": "core",
+      "name": "Core (unserviceable)",
+      "description": "Strips servicing itself: WinSxS, Windows Update, WinRE and Defender. The smallest possible image, and it can never be updated, repaired or have features added. For disposable test and lab VMs only.",
+      "order": 40,
+      "maxRisk": "Unserviceable"
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "apps.edge",
+      "name": "Microsoft Edge",
+      "category": "Microsoft Apps",
+      "description": "Removes the Edge browser, EdgeUpdate and EdgeCore, along with their uninstall entries.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 620,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "No browser is installed until you install one — plan to have an installer on hand",
+        "Some Settings pages and Help links open nothing",
+        "PDF files have no default handler"
+      ],
+      "actions": [
+        { "type": "DeleteDirectory", "path": "Program Files (x86)\\Microsoft\\Edge", "optional": true },
+        { "type": "DeleteDirectory", "path": "Program Files (x86)\\Microsoft\\EdgeUpdate", "optional": true },
+        { "type": "DeleteDirectory", "path": "Program Files (x86)\\Microsoft\\EdgeCore", "optional": true },
+        {
+          "type": "DeleteRegistryKey",
+          "hive": "Software",
+          "key": "WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft Edge",
+          "optional": true
+        },
+        {
+          "type": "DeleteRegistryKey",
+          "hive": "Software",
+          "key": "WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft Edge Update",
+          "optional": true
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Edge",
+          "valueName": "HubsSidebarEnabled",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    },
+    {
+      "id": "apps.edge.webview2",
+      "name": "WebView2 Runtime",
+      "category": "Microsoft Apps",
+      "description": "Removes the shared WebView2 runtime. Off by default in every preset, including Core — this is opt-in only.",
+      "risk": "Breaking",
+      "defaultIn": [],
+      "estimatedSavingsMb": 180,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": ["apps.edge"],
+      "conflicts": [],
+      "breaks": [
+        "Any third-party application embedding WebView2 fails to start, often with no useful error",
+        "Microsoft Teams, many Office surfaces and numerous installers stop working",
+        "Apps that bundle their own WebView2 installer will silently reinstall it"
+      ],
+      "actions": [
+        { "type": "DeleteDirectory", "path": "Windows\\System32\\Microsoft-Edge-Webview", "optional": true }
+      ]
+    },
+    {
+      "id": "apps.onedrive",
+      "name": "OneDrive",
+      "category": "Microsoft Apps",
+      "description": "Removes the OneDrive setup stub and disables file sync by policy.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 120,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "No OneDrive sync; Documents and Pictures stay local unless you install it yourself"
+      ],
+      "actions": [
+        { "type": "DeleteFile", "path": "Windows\\System32\\OneDriveSetup.exe", "optional": true },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\OneDrive",
+          "valueName": "DisableFileSyncNGSC",
+          "kind": "Dword",
+          "data": 1
+        }
+      ]
+    },
+    {
+      "id": "apps.xbox",
+      "name": "Xbox & Gaming",
+      "category": "Gaming",
+      "description": "Removes the Xbox app, Game Bar, Game Overlay, identity provider and TCUI.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 340,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Game Bar screen recording and performance overlay are gone",
+        "Xbox achievements, cloud saves and Game Pass installs stop working",
+        "A few games that call the Xbox identity provider will refuse to launch"
+      ],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": [
+            "Microsoft.XboxApp",
+            "Microsoft.XboxGameOverlay",
+            "Microsoft.XboxGamingOverlay",
+            "Microsoft.XboxIdentityProvider",
+            "Microsoft.XboxSpeechToTextOverlay",
+            "Microsoft.Xbox.TCUI",
+            "Microsoft.GamingApp"
+          ]
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\GameDVR",
+          "valueName": "AllowGameDVR",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    },
+    {
+      "id": "ai.copilot",
+      "name": "Copilot",
+      "category": "AI & Assistant",
+      "description": "Removes the Copilot app and disables it by policy.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 90,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["Microsoft.Copilot", "Microsoft.Windows.Copilot", "Microsoft.BingSearch"]
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\WindowsCopilot",
+          "valueName": "TurnOffWindowsCopilot",
+          "kind": "Dword",
+          "data": 1
+        }
+      ]
+    }
+  ]
+}

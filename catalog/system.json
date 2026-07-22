@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "privacy.telemetry",
+      "name": "Telemetry & Diagnostics",
+      "category": "Telemetry & Privacy",
+      "description": "Disables diagnostic data collection, the advertising ID, tailored experiences and the compatibility appraiser tasks.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 40,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\DataCollection",
+          "valueName": "AllowTelemetry",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
+          "valueName": "Enabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Privacy",
+          "valueName": "TailoredExperiencesWithDiagnosticDataEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        { "type": "DisableService", "name": "dmwappushservice", "startType": 4 },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "content.sponsored",
+      "name": "Sponsored Content & Suggestions",
+      "category": "Bing & Content",
+      "description": "Turns off preinstalled promotional apps, Start menu suggestions, lock screen spotlight ads and consumer features.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\CloudContent",
+          "valueName": "DisableWindowsConsumerFeatures",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "valueName": "SilentInstalledAppsEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "valueName": "SystemPaneSuggestionsEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "DeleteRegistryKey",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager\\SuggestedApps",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "system.defender",
+      "name": "Windows Defender",
+      "category": "Unserviceable",
+      "description": "Removes Windows Defender entirely. Core preset only, and gated behind a typed confirmation.",
+      "risk": "Unserviceable",
+      "defaultIn": ["core"],
+      "estimatedSavingsMb": 780,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "No antivirus, no real-time protection and no SmartScreen — install a replacement before going online",
+        "Tamper protection and Windows Security are gone; the Security app shows empty or errors",
+        "This CANNOT be undone on the resulting image — Defender cannot be reinstalled after the fact",
+        "Some enterprise management and attack-surface-reduction policies stop applying silently"
+      ],
+      "actions": [
+        { "type": "RemovePackage", "name": "Windows-Defender-Client-Package~31bf3856ad364e35~amd64~~", "optional": true },
+        { "type": "DisableService", "name": "WinDefend", "startType": 4 },
+        { "type": "DisableService", "name": "WdNisSvc", "startType": 4 },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows Defender",
+          "valueName": "DisableAntiSpyware",
+          "kind": "Dword",
+          "data": 1
+        }
+      ]
+    }
+  ]
+}
