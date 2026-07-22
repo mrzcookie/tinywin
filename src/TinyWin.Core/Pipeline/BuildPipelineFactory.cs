@@ -37,6 +37,7 @@ public static class BuildPipelineFactory
             new CleanupImageStage(imaging),
             new CommitImageStage(imaging),
             new RecompressImageStage(imaging),
+            new PatchBootWimStage(imaging, registry),
             new BuildIsoStage(isoBuilder),
             new VerifyStage(),
         ]);
