@@ -1,0 +1,314 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "privacy.telemetry",
+      "name": "Telemetry & Diagnostics",
+      "category": "Telemetry & Privacy",
+      "description": "Disables diagnostic data collection, the advertising ID, tailored experiences and the connected user experiences service.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 40,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\DataCollection",
+          "valueName": "AllowTelemetry",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\DataCollection",
+          "valueName": "AllowCommercialDataPipeline",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
+          "valueName": "Enabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Privacy",
+          "valueName": "TailoredExperiencesWithDiagnosticDataEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        { "type": "DisableService", "name": "DiagTrack", "startType": 4 },
+        { "type": "DisableService", "name": "dmwappushservice", "startType": 4 },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Application Experience\\MareBackup",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "privacy.ceip",
+      "name": "Customer Experience Improvement Program",
+      "category": "Telemetry & Privacy",
+      "description": "Removes the CEIP uploader tasks, the USB CEIP probe and the Autochk proxy that reports disk check results.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\SQMClient\\Windows",
+          "valueName": "CEIPEnable",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Autochk\\Proxy",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "privacy.errorreporting",
+      "name": "Windows Error Reporting",
+      "category": "Telemetry & Privacy",
+      "description": "Disables the error reporting service, its queue upload task and crash report submission.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Application crashes produce no local crash report, which makes diagnosing a misbehaving app much harder",
+        "Some drivers and enterprise apps rely on WER to collect their own dumps and will silently collect nothing",
+        "Reliability Monitor stops recording application failures"
+      ],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\Windows Error Reporting",
+          "valueName": "Disabled",
+          "kind": "Dword",
+          "data": 1
+        },
+        { "type": "DisableService", "name": "WerSvc", "startType": 4 },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "privacy.inputpersonalization",
+      "name": "Typing & Inking Personalization",
+      "category": "Telemetry & Privacy",
+      "description": "Stops Windows building a personal dictionary from what you type and write, and disables the linguistic data upload.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\InputPersonalization",
+          "valueName": "RestrictImplicitInkCollection",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\InputPersonalization",
+          "valueName": "RestrictImplicitTextCollection",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\InputPersonalization\\TrainedDataStore",
+          "valueName": "HarvestContacts",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Personalization\\Settings",
+          "valueName": "AcceptedPrivacyPolicy",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    },
+    {
+      "id": "privacy.feedback",
+      "name": "Feedback Hub & Feedback Prompts",
+      "category": "Telemetry & Privacy",
+      "description": "Removes the Feedback Hub app and stops Windows asking for feedback.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 31,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.WindowsFeedbackHub"] },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Siuf\\Rules",
+          "valueName": "NumberOfSIUFInPeriod",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\DataCollection",
+          "valueName": "DoNotShowFeedbackNotifications",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "privacy.activityhistory",
+      "name": "Activity History",
+      "category": "Telemetry & Privacy",
+      "description": "Stops Windows recording an activity feed and uploading it to a Microsoft account.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\System",
+          "valueName": "EnableActivityFeed",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\System",
+          "valueName": "PublishUserActivities",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\System",
+          "valueName": "UploadUserActivities",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    },
+    {
+      "id": "privacy.location",
+      "name": "Location Services",
+      "category": "Telemetry & Privacy",
+      "description": "Disables the geolocation service and denies location access by policy.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Find My Device cannot locate this machine if it is lost or stolen",
+        "Automatic time zone stops following you, so the clock is wrong after travelling until you fix it by hand",
+        "Weather, Maps and any app asking for location get a permanent denial rather than a prompt"
+      ],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\LocationAndSensors",
+          "valueName": "DisableLocation",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location",
+          "valueName": "Value",
+          "kind": "Sz",
+          "data": "Deny"
+        },
+        { "type": "DisableService", "name": "lfsvc", "startType": 4 }
+      ]
+    }
+  ]
+}
