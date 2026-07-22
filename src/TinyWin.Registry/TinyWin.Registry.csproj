@@ -4,10 +4,20 @@
     <TargetFramework>$(TinyWinWindowsTargetFramework)</TargetFramework>
     <RootNamespace>TinyWin.Registry</RootNamespace>
     <SupportedOSPlatformVersion>$(TinyWinSupportedOSPlatformVersion)</SupportedOSPlatformVersion>
+    <!-- [LibraryImport] source-generated marshalling stubs are unsafe by construction. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TinyWin.Core\TinyWin.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The native seam (INativeRegistry and friends) is internal on purpose: nothing outside this
+      project may hold a registry handle. The tests substitute a fake for it, so they need access.
+    -->
+    <InternalsVisibleTo Include="TinyWin.Registry.Tests" />
   </ItemGroup>
 
 </Project>
