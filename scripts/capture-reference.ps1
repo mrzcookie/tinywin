@@ -89,49 +89,68 @@ try {
     & dism.exe /English /Get-WimInfo /WimFile:$wim > "$OutputDir\01-wiminfo.txt" 2>&1
     Write-Ok "01-wiminfo.txt"
 
-    # --- Progress-bar encoding under redirection -----------------------------------
-    # The open question from docs/spikes/dism-backend.md section 5: when stdout is a PIPE
-    # rather than a console, does DISM emit backspaces, bare CR, or suppress the bar?
-    # This decides whether DismExeBackend can report real percentages.
+    # --- Mount READ-ONLY, capturing progress encoding as we go ----------------------
+    # Two jobs at once. The open question from docs/spikes/dism-backend.md section 5 is
+    # whether DISM's progress bar survives stdout redirection, and only a LONG operation
+    # renders one - an enumeration like /Get-WimInfo prints no bar at all, so probing that
+    # would answer nothing. The mount is the natural long operation, so redirect it.
 
-    Write-Step "Probing progress-bar encoding under redirection"
-    $probe = "$env:TEMP\tinywin-progress-probe.bin"
+    # DISM refuses to mount into a non-empty directory (0xc1420114), and a previous failed
+    # run leaves one behind. Clear it. Safe because the mounted-image check above already
+    # confirmed nothing is registered against it.
+    Write-Step "Preparing mount directory"
+    & dism.exe /English /Cleanup-Mountpoints 2>&1 | Out-Null
+    if (Test-Path $mountDir) { Remove-Item $mountDir -Recurse -Force -ErrorAction SilentlyContinue }
+    New-Item -ItemType Directory -Force -Path $mountDir | Out-Null
+    $leftover = @(Get-ChildItem $mountDir -Force -ErrorAction SilentlyContinue).Count
+    if ($leftover -gt 0) { Write-Error "Mount directory is not empty and could not be cleared: $mountDir"; exit 1 }
+    Write-Ok "Empty mount directory ready."
+
+    Write-Step "Mounting image index $Index (read-only, this takes a few minutes)"
     $psi = New-Object Diagnostics.ProcessStartInfo
     $psi.FileName = "dism.exe"
-    $psi.Arguments = "/English /Get-WimInfo /WimFile:`"$wim`" /Index:$Index"
+    $psi.Arguments = "/English /Mount-Wim /WimFile:`"$wim`" /Index:$Index /MountDir:`"$mountDir`" /ReadOnly"
     $psi.RedirectStandardOutput = $true
     $psi.UseShellExecute = $false
     $p = [Diagnostics.Process]::Start($psi)
     $raw = $p.StandardOutput.ReadToEnd()
     $p.WaitForExit()
-    [IO.File]::WriteAllText($probe, $raw)
+
+    if ($p.ExitCode -ne 0) {
+        Write-Host $raw
+        Write-Error "Mount failed with exit code $($p.ExitCode)"
+        exit 1
+    }
+    $mounted = $true
+    Write-Ok "Mounted read-only at $mountDir"
 
     $bytes = [Text.Encoding]::UTF8.GetBytes($raw)
     $bs = ($bytes | Where-Object { $_ -eq 0x08 }).Count
     $cr = ($bytes | Where-Object { $_ -eq 0x0D }).Count
     $lf = ($bytes | Where-Object { $_ -eq 0x0A }).Count
+    $pct = ([regex]::Matches($raw, '\d+(\.\d+)?%')).Count
     @"
 DISM progress encoding under stdout redirection
 ===============================================
+Captured from a real /Mount-Wim, which is long enough to render a progress bar.
+(An enumeration such as /Get-WimInfo prints no bar, so probing it proves nothing.)
+
 backspace (0x08) count : $bs
 CR        (0x0D) count : $cr
 LF        (0x0A) count : $lf
+percent tokens matched : $pct
 
 Interpretation:
-  backspace > 0  -> progress bar is \b-driven and parseable incrementally
-  CR >> LF       -> bar rewrites the line with bare \r
-  both ~0        -> bar is suppressed when not a console; DismExeBackend can only
-                    report stage transitions, not real percentages
+  backspace > 0        -> bar is \b-driven; parseable incrementally
+  CR >> LF             -> bar rewrites the line with bare \r; split on \r to read it
+  percent tokens > 0   -> percentages ARE present in redirected output, whatever the
+                          rewrite mechanism, so DismExeBackend can report real progress
+  all ~0               -> bar suppressed off-console; only stage transitions available
+
+--- raw capture follows ---
+$raw
 "@ | Set-Content "$OutputDir\02-progress-encoding.txt" -Encoding utf8
-    Write-Ok "02-progress-encoding.txt  (backspaces=$bs cr=$cr lf=$lf)"
-
-    # --- Mount READ-ONLY ------------------------------------------------------------
-
-    Write-Step "Mounting image index $Index (read-only, this takes a few minutes)"
-    & dism.exe /English /Mount-Wim /WimFile:$wim /Index:$Index /MountDir:$mountDir /ReadOnly
-    if ($LASTEXITCODE -ne 0) { Write-Error "Mount failed with exit code $LASTEXITCODE"; exit 1 }
-    $mounted = $true
-    Write-Ok "Mounted read-only at $mountDir"
+    Write-Ok "02-progress-encoding.txt  (backspaces=$bs cr=$cr lf=$lf percent-tokens=$pct)"
 
     # --- The ground truth the catalog agent needs -----------------------------------
 
