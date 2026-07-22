@@ -91,6 +91,28 @@ The checklist is §9 of the spike doc.
 | `imaging-engine` | `src/TinyWin.Imaging` | `DismExeBackend` — now known to be permanent, not a stopgap. |
 | `iso-builder` | `src/TinyWin.IsoBuilder` | Launched after the spike verdict, implementing its §11 work list. |
 | `ui-shell` | `src/TinyWin.App` | WinUI 3. Templates are not installed, so the csproj is hand-authored. |
+| `packaging` | build config, `tools/`, `.github/workflows/`, licensing docs | M5. Single-file publish, GPLv3 source obligation, release workflow. |
+
+## Packaging — `docs/findings/packaging.md`
+
+M5's build side is in place, ahead of the UI it packages.
+
+- **The single-file publish works for both architectures.** 215.4 MB (x64) and 229.2 MB
+  (arm64), one file each, PE headers verified. Built against an isolated copy of `ui-shell`'s
+  `TinyWin.App`, since that project is not on `main` yet.
+- **Elevation survives to the artifact.** WinUI merges `app.manifest` into a 131 KB generated
+  one; `requireAdministrator` was extracted back out of the published exe to confirm it.
+- **The GPLv3 obligation is now enforced by the build**, not by intent.
+  `tools/check-third-party.ps1` fails CI if a bundled component is missing from
+  `THIRD-PARTY.md`, and `release.yml` attaches binaries and corresponding source to one
+  release in one call. Corresponding source is **139 MB**, 122 MB of which is msys2-runtime —
+  the concrete argument for the native mingw-w64 build in `docs/PLAN.md` §3.1.
+- **Versions come from the git tag.** Anything untagged is stamped `-dev`.
+- **`release.yml` has never been run** — validated by parsing, and by executing every script
+  it calls. It will fail at the publish step until `ui-shell` merges, by design.
+
+Still open: an icon, arm64 hardware verification, and the §7 licensing question about
+redistributing the Windows App SDK inside a GPLv3 executable.
 
 ## Next
 
