@@ -45,20 +45,55 @@ worktree has therefore been briefed to:
 **When you are back at the machine, running those scripts in an elevated shell is the highest-value
 thing you can do** — it converts a pile of inference into verified behaviour.
 
+## Spikes — both complete and merged
+
+### `docs/spikes/dism-backend.md` — confirmed the plan, for a stronger reason
+
+- **`Microsoft.Dism` 6.0.0 already wraps the undocumented provisioned-appx exports**, and
+  wraps them correctly. `PInvokeAppxBackend` is struck from the plan. Hand-rolling it invited a
+  silent bug: `dismapi.h` uses `#pragma pack(push, 1)`, so the obvious `LayoutKind.Sequential`
+  struct gets a 72-byte stride against a real 68 — yielding a plausible-but-wrong package list
+  rather than a clean crash.
+- **`dism.exe` is permanently mandatory, not a fallback.** Neither `StartComponentCleanup`/
+  `ResetBase` nor `Export-Image` exists as *any* export in `dismapi.dll`. The whole table was
+  checked. `ManagedDismBackend` therefore becomes a partial override composing over
+  `DismExeBackend`, not a peer.
+- Appx methods have no progress or cancellation overloads, so per-package progress belongs to
+  Core's stage engine.
+- `DismGetRegistryMountPoint` exists — flagged to `registry-engine` as a possible alternative to
+  hand-rolled `RegLoadKey`.
+
+### `docs/spikes/iso-build.md` — conditional GO, and it falsified a plan premise
+
+- **xorriso cannot write UDF in any configuration** — the filesystem is unimplemented in
+  libisofs, not a missing flag. Had UDF truly been required this would have been a hard no.
+- **It isn't required.** ISO 9660 level 3 multi-extent holds a 4.7 GiB member file, and
+  Windows' own `cdfs.sys` reads it back with a matching SHA-256 across the 4 GiB boundary.
+  The real requirement is **ISO 9660 level 3 + Joliet**.
+- `-J -joliet-long` is mandatory and the alternatives are traps: `-untranslated-filenames`
+  *silently* truncates at 37 characters, which inspects clean and ships broken.
+- Boot geometry must be read from the source ISO (`-report_el_torito as_mkisofs`); xorriso
+  silently accepts a wrong `-boot-load-size`.
+- The MSYS2 build takes `/cygdrive/...` paths only, and drags a wider GPL corresponding-source
+  obligation than expected (`msys-2.0.dll`, readline, ncurses, iconv, zlib, bzip2).
+- Escape hatch if the boot test fails: `DISM /Split-Image /FileSize:4000` into `install.swm`.
+
+**One gate remains for the ISO path: an actual Hyper-V boot test**, which needs elevation.
+The checklist is §9 of the spike doc.
+
 ## In flight
 
 | Worktree | Owns | Notes |
 |---|---|---|
-| `spike-iso-build` | `docs/spikes/iso-build.md` | Can xorriso replace oscdimg? Vendoring a Windows binary, then a real ISO build from the `D:` tree. Boot test blocked on elevation. |
-| `spike-dism-backend` | `docs/spikes/dism-backend.md` | `Microsoft.Dism` API surface, whether `DismRemoveProvisionedAppxPackage` is a usable export, vs `dism.exe`. |
 | `catalog-authoring` | `catalog/*.json` | Expand 8 seed components to ~40. Pure data. |
-| `unattend-generator` | `src/TinyWin.Unattend` | `autounattend.xml` generation + golden tests. Fully testable unelevated. |
-| `registry-engine` | `src/TinyWin.Registry` | Hive session, privilege enabling, unload-retry. |
-| `imaging-engine` | `src/TinyWin.Imaging` | `DismExeBackend` first — the guaranteed floor. |
+| `unattend-generator` | `src/TinyWin.Unattend` | `autounattend.xml` + golden tests. Fully testable unelevated. |
+| `registry-engine` | `src/TinyWin.Registry` | Hive session, privilege enabling, unload-retry. Evaluating `DismGetRegistryMountPoint` first. |
+| `imaging-engine` | `src/TinyWin.Imaging` | `DismExeBackend` — now known to be permanent, not a stopgap. |
+| `iso-builder` | `src/TinyWin.IsoBuilder` | Launched after the spike verdict, implementing its §11 work list. |
 | `ui-shell` | `src/TinyWin.App` | WinUI 3. Templates are not installed, so the csproj is hand-authored. |
 
 ## Next
 
 - **M1 vertical slice** — the milestone that actually matters: ISO in, mount, remove 3 appx,
-  unmount, rebuild, boots in Hyper-V. Needs `imaging-engine` + `iso-builder` + elevation.
-- `iso-builder` worktree is deliberately **not** launched yet; it waits on the xorriso spike verdict.
+  unmount, rebuild, boot in Hyper-V. Needs `imaging-engine` + `iso-builder` + **elevation**.
+- Both spike branches are merged; their worktrees can be archived.
