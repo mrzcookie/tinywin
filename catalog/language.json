@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "language.handwriting",
+      "name": "Handwriting Recognition",
+      "category": "Language & Input",
+      "description": "Removes the handwriting recognition language feature for the installed language.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 45,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Pen and touch input to the handwriting panel no longer converts to text",
+        "The touch keyboard's handwriting mode disappears on tablets and 2-in-1s",
+        "Ink-to-text in OneNote, Journal and the Snipping Tool stops working"
+      ],
+      "actions": [
+        {
+          "type": "RemoveCapability",
+          "name": "Language.Handwriting~~~en-US~0.0.1.0",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "language.ocr",
+      "name": "Optical Character Recognition",
+      "category": "Language & Input",
+      "description": "Removes the OCR language feature and the Windows OCR engine capability.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 25,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Text Actions in the Snipping Tool cannot extract text from a screenshot",
+        "PowerToys Text Extractor and similar tools built on the Windows OCR API return nothing",
+        "Searching for text inside scanned images and PDFs stops finding matches"
+      ],
+      "actions": [
+        { "type": "RemoveCapability", "name": "Language.OCR~~~en-US~0.0.1.0", "optional": true },
+        { "type": "RemoveCapability", "name": "Windows.WinOcr~~~~0.0.1.0", "optional": true }
+      ]
+    },
+    {
+      "id": "language.tts",
+      "name": "Text-to-Speech Voices",
+      "category": "Language & Input",
+      "description": "Removes the text-to-speech voices for the installed language.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 90,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Narrator has no voice and is effectively unusable, which makes the machine inaccessible to blind users",
+        "Read Aloud in Edge, Word and the Immersive Reader goes silent",
+        "Any app using the speech synthesis API gets no audio and often no error"
+      ],
+      "actions": [
+        {
+          "type": "RemoveCapability",
+          "name": "Language.TextToSpeech~~~en-US~0.0.1.0",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "language.speech",
+      "name": "Speech Recognition",
+      "category": "Language & Input",
+      "description": "Removes the offline speech recognition language feature.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 130,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Voice typing (Win+H) and Voice Access stop working entirely",
+        "Windows Speech Recognition cannot be set up, removing a major accessibility path for users who cannot type",
+        "Dictation in Office and other apps that use the system recognizer fails"
+      ],
+      "actions": [
+        { "type": "RemoveCapability", "name": "Language.Speech~~~en-US~0.0.1.0", "optional": true }
+      ]
+    },
+    {
+      "id": "language.mathrecognizer",
+      "name": "Math Recognizer",
+      "category": "Language & Input",
+      "description": "Removes the handwritten maths recognition capability used by the Math Input Panel.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 24,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveCapability", "name": "MathRecognizer~~~~0.0.1.0", "optional": true }
+      ]
+    },
+    {
+      "id": "language.retaildemo",
+      "name": "Retail Demo Mode",
+      "category": "Language & Input",
+      "description": "Disables the in-store retail demo experience and its content cleanup task. Nothing outside a shop display ever uses it.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 1,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "DisableService", "name": "RetailDemo", "startType": 4, "optional": true },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\RetailDemo\\CleanupOfflineContent",
+          "optional": true
+        }
+      ]
+    }
+  ]
+}
