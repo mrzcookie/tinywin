@@ -220,14 +220,52 @@ rather than a fallback:
 - **(c)** Offer a consented `adksetup.exe /features OptionId.DeploymentTools` install
   only as a last resort, if both above fail.
 
-GPLv3 removes the *legal* blocker, not the *technical* one — the spike still gates this.
+GPLv3 removes the *legal* blocker, not the *technical* one — the spike gated this.
 
-**Spike (2 days, throwaway worktree):** can xorrisofs produce a Win11 ISO that boots on
-both UEFI and legacy BIOS, with `install.wim` > 4 GB (which needs UDF, not ISO9660)? The
-dual El Torito boot catalog — `etfsboot.com` for BIOS plus `efisys.bin` as an
-`-eltorito-alt-boot` entry — is the fiddly part. Test matrix: Hyper-V Gen2
-(UEFI, Secure Boot off), Hyper-V Gen1 (BIOS), and a real USB via Rufus. If xorriso fails,
-(b)+(c) ships and the app is merely less convenient, not blocked.
+> **Spike complete: conditional GO.** See `docs/spikes/iso-build.md`. xorriso is adopted as
+> primary with `oscdimg` as runtime-selectable fallback. One gate remains: an actual boot
+> test, which needs elevation for Hyper-V.
+
+**The UDF premise above was wrong, and the correction matters.** This section previously
+asserted that a >4 GB `install.wim` "needs UDF, not ISO9660". Both halves are false:
+
+- **xorriso cannot write UDF at all** — not a missing flag, the filesystem is unimplemented
+  in libisofs. Had UDF genuinely been required, this would have been a hard NO-GO.
+- **ISO 9660 level 3 permits multi-extent files**, lifting the 4 GiB single-extent ceiling.
+  Verified end to end: a 4.7 GiB member file written with `-iso-level 3`, mounted by
+  Windows' own `cdfs.sys`, and read back with a matching SHA-256 across the 4 GiB boundary.
+
+So the requirement is **ISO 9660 level 3 + Joliet**, not UDF. The resulting media differs
+from Microsoft's own (which is UDF-only) in filesystem type while staying readable by
+Windows — and validating that deviation is exactly what the boot test is for.
+
+Three further findings that `TinyWin.IsoBuilder` must act on:
+
+1. **`-J -joliet-long` is mandatory.** With UDF gone, Joliet carries exact filenames. The
+   two plausible alternatives are traps: `-full-iso9660-filenames` uppercases and truncates
+   at 31 chars, and `-untranslated-filenames` *silently* truncates at 37 — it looks correct
+   on inspection while corrupting long names. Joliet caps basenames at 103 chars, so the
+   builder must preflight the staged tree and **fail loudly** rather than emit truncated
+   media.
+2. **Read boot geometry from the source ISO, don't hardcode it.**
+   `xorriso -report_el_torito as_mkisofs` emits the exact options reproducing an existing
+   image's boot setup. xorriso silently accepts a wrong `-boot-load-size`, so guessing is
+   unsafe.
+3. **The MSYS2 build takes POSIX paths only.** Every path argument needs converting to
+   `/cygdrive/<drive>/...`; `C:\...` and `C:/...` both fail. Small, testable, and a golden
+   test belongs on it.
+
+**Escape hatch if the boot test fails on the >4 GB read:** split with
+`DISM /Split-Image /FileSize:4000` into `install.swm`, which Windows Setup supports
+natively and which removes the multi-extent requirement entirely. Ship it behind a setting.
+
+**Remaining GPLv3 cost.** The vendored MSYS2 bundle is 8 files / 6.6 MB, but it drags in
+`msys-2.0.dll` (LGPLv3), readline, ncurses, iconv, zlib and bzip2 — corresponding source
+for *each* must be mirrored into our own release assets, not merely linked upstream. M5
+should switch to a native mingw-w64 build from pinned upstream source in CI, which both
+shrinks that obligation (`--disable-libreadline`, `--disable-libbz2`, static link) and
+removes the `/cygdrive` tax. That build is **unproven** — no toolchain was installed to try
+it — so it is a tracked M5 task, not a settled fact. arm64 xorriso is an open question.
 
 Because the whole toolchain is now GPLv3, also record third-party attributions and ship
 xorriso's corresponding source offer alongside releases — a GPLv3 obligation, not a

@@ -35,10 +35,31 @@ public sealed record IsoBuildRequest
     public string UefiBootImage { get; init; } = @"efi\microsoft\boot\efisys.bin";
 
     /// <summary>
-    /// Always true in practice: install.wim exceeds 4 GB on real media (7.06 GB on 25H2), which
-    /// ISO9660 cannot represent. Kept explicit so the requirement is visible rather than implied.
+    /// Boot geometry read from the source ISO via <c>xorriso -report_el_torito as_mkisofs</c>.
+    /// Never hardcode these — xorriso silently accepts a wrong load size, producing media that
+    /// fails only at boot. Null means "read it during Inspect".
     /// </summary>
-    public bool RequireUdf { get; init; } = true;
+    public IsoBootGeometry? BootGeometry { get; init; }
+
+    /// <summary>
+    /// Split install.wim into install.swm when it exceeds 4 GiB, instead of relying on ISO 9660
+    /// level 3 multi-extent. The escape hatch if WinPE turns out not to read multi-extent files —
+    /// see docs/spikes/iso-build.md section 2b.
+    /// </summary>
+    public bool SplitOversizeImage { get; init; }
+}
+
+/// <summary>
+/// El Torito boot catalog values lifted from the source ISO, so the rebuilt image reproduces
+/// them exactly rather than guessing.
+/// </summary>
+public sealed record IsoBootGeometry
+{
+    public required string VolumeId { get; init; }
+    public required string BiosBootImage { get; init; }
+    public required int BiosLoadSize { get; init; }
+    public required string UefiBootImage { get; init; }
+    public required int UefiLoadSize { get; init; }
 }
 
 public interface IIsoBuilder
