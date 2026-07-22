@@ -1,9 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(TinyWinWindowsTargetFramework)</TargetFramework>
+    <!--
+      Plain net10.0, not the windows TFM the other engine projects use. The generator is pure
+      string/XML work with no OS dependency, and staying platform-neutral is what lets the
+      net10.0 test project reference it and run the golden suite anywhere.
+    -->
+    <TargetFramework>$(TinyWinTargetFramework)</TargetFramework>
     <RootNamespace>TinyWin.Unattend</RootNamespace>
-    <SupportedOSPlatformVersion>$(TinyWinSupportedOSPlatformVersion)</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
