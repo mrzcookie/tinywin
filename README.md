@@ -68,6 +68,17 @@ dotnet run --project src/TinyWin.Cli -- catalog --validate  # is the catalog wel
 dotnet run --project src/TinyWin.Cli -- presets             # what does each preset resolve to?
 ```
 
+### Building a release locally
+
+```
+powershell -File tools/fetch-xorriso.ps1 -WithSource   # vendored xorriso + its source
+powershell -File tools/publish.ps1                     # portable exe, win-x64 and win-arm64
+powershell -File tools/pack-source.ps1                 # the GPLv3 corresponding-source archives
+```
+
+Everything lands in `artifacts/`. This is the same path CI takes — see
+[`.github/workflows/release.yml`](.github/workflows/release.yml), which runs on a `v*` tag.
+
 ## Documentation
 
 | | |
@@ -83,7 +94,9 @@ GPLv3 — see [`LICENSE`](LICENSE).
 
 TinyWin bundles [GNU xorriso](https://www.gnu.org/software/xorriso/) (GPLv3+) to build ISOs
 without requiring the Windows ADK. Corresponding source for xorriso and its runtime
-dependencies is published alongside each release.
+dependencies is attached to every release, as GPLv3 §6 requires — from the same place as the
+binaries, not merely linked. [`THIRD-PARTY.md`](THIRD-PARTY.md) lists every bundled
+component, its licence and where its source comes from.
 
 ## Acknowledgements
 

@@ -101,6 +101,35 @@ nine task files and the rest materialise at setup from `TaskCache` in the SOFTWA
   real 26200 media. Both are `optional: true`, so they report `NoTarget` quietly — correct, but
   they are dead weight and could be dropped.
 
+## Packaging — `docs/findings/packaging.md`
+
+- **The single-file publish works for both architectures.** 215.4 MB (x64) and 229.2 MB (arm64),
+  one file each, PE headers verified.
+- **Elevation survives to the artifact.** WinUI merges `app.manifest` into a 131 KB generated one;
+  `requireAdministrator` was extracted back out of the published exe to confirm it, rather than
+  assumed.
+- **The GPLv3 obligation is enforced by the build**, not by intent.
+  `tools/check-third-party.ps1` fails CI when a bundled component is missing from
+  `THIRD-PARTY.md`, and `release.yml` attaches binaries and corresponding source to one release in
+  one call. Corresponding source is **139 MB**, 122 MB of which is msys2-runtime — a concrete
+  argument for the native mingw-w64 build in `docs/PLAN.md` §3.1.
+- **Versions come from the git tag.** Anything untagged is stamped `-dev`, so a stray build cannot
+  be mistaken for a release.
+- **`release.yml` has never actually run.** It was validated by parsing and by executing every
+  script it calls. It was written before `ui-shell` merged; now that the app is on `main`, the
+  publish step needs a real run to confirm.
+
+Still open: an application icon, arm64 verification on real hardware, and one licensing question
+below.
+
+## Open question for the maintainer
+
+**Does redistributing the Windows App SDK inside a GPLv3 executable actually work?** The
+self-contained single-file publish embeds Microsoft's Windows App SDK runtime into the same binary
+that is conveyed under GPLv3. Microsoft's redistribution terms and GPLv3 §5–6 both have opinions
+about that, and this project has not resolved it. Raised by the packaging worktree; it is a
+licensing judgement, not a technical one, so it is left for a human.
+
 ## The remaining gate
 
 **Enable Hyper-V, then run `docs/spikes/iso-build.md` §9 step 5.**
