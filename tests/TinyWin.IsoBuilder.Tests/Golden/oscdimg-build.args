@@ -1,0 +1,12 @@
+# Expected ADK oscdimg argument list, one argument per line, in order.
+# This is tiny11builder's invocation (docs/PLAN.md section 2.2 step 13) with the volume label and
+# boot images taken from the source ISO. oscdimg takes native Windows paths and derives the boot
+# load sizes itself, so nothing here is /cygdrive and there is no -boot-load-size.
+-m
+-o
+-u2
+-udfver102
+-lCCCOMA_X64FRE_EN-US_DV9
+-bootdata:2#p0,e,bC:\scratch\iso\boot\etfsboot.com#pEF,e,bC:\scratch\iso\efi\microsoft\boot\efisys.bin
+C:\scratch\iso
+D:\out\tinywin.iso

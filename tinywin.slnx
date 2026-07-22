@@ -10,6 +10,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TinyWin.Imaging.Tests/TinyWin.Imaging.Tests.csproj" />
+    <Project Path="tests/TinyWin.IsoBuilder.Tests/TinyWin.IsoBuilder.Tests.csproj" />
     <Project Path="tests/TinyWin.Registry.Tests/TinyWin.Registry.Tests.csproj" />
     <Project Path="tests/TinyWin.Tests/TinyWin.Tests.csproj" />
   </Folder>

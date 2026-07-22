@@ -1,0 +1,21 @@
+GNU xorriso 1.5.6 : RockRidge filesystem manipulator, libburnia project.
+
+xorriso : NOTE : Loading ISO image tree from LBA 0
+xorriso : UPDATE :       1 nodes read in 1 seconds
+libisofs: WARNING : Found hidden El-Torito image. Its size could not be figured out, so image modify or boot image patching may lead to bad results.
+libisofs: NOTE : Found hidden El-Torito image for EFI.
+libisofs: NOTE : EFI image start and size: 536 * 2048 , 1 * 512
+xorriso : NOTE : Detected El-Torito boot information which currently is set to be discarded
+Drive current: -indev '/cygdrive/c/Users/Zachary/Downloads/Win11_25H2_English_x64_v2.iso'
+Media current: stdio file, overwriteable
+Media status : is written , is appendable
+Boot record  : El Torito
+Media summary: 1 session, 4136525 data blocks, 8079m data,  763g free
+Volume id    : 'CCCOMA_X64FRE_EN-US_DV9'
+xorriso : SORRY : Cannot enable EL Torito boot image #1 because it is not a data file in the ISO filesystem
+xorriso : SORRY : Cannot enable EL Torito boot image #2 because it is not a data file in the ISO filesystem
+-V 'CCCOMA_X64FRE_EN-US_DV9'
+--modification-date='2026030800000000'
+--boot-catalog-hide
+-eltorito-alt-boot
+xorriso : NOTE : Tolerated problem event of severity 'SORRY'

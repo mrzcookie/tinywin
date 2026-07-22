@@ -1,0 +1,16 @@
+GNU xorriso 1.5.6 : RockRidge filesystem manipulator, libburnia project.
+
+xorriso : NOTE : Loading ISO image tree from LBA 0
+xorriso : UPDATE :      11 nodes read in 1 seconds
+Drive current: -indev '/cygdrive/c/scratch/synth.iso'
+Media current: stdio file, overwriteable
+Media status : is written , is appendable
+Boot record  : El Torito
+Media summary: 1 session, 2433 data blocks, 4866k data,  771g free
+Volume id    : 'CCCOMA_X64FRE_EN-US_DV9'
+-r--r--r--    1 197609   197121       4096 Mar  6 19:03 '/boot/etfsboot.com'
+-r-xr-xr-x    1 197609   197121    3008968 Mar  6 19:03 '/efi/boot/bootx64.efi'
+-r--r--r--    1 197609   197121    1474560 Mar  6 19:03 '/efi/microsoft/boot/efisys.bin'
+-r-xr-xr-x    1 197609   197121      99896 Mar  6 19:03 '/setup.exe'
+-rw-r--r--    1 197609   197121 7578075168 Mar  6 19:03 '/sources/install.wim'
+drwxr-xr-x    1 197609   197121          0 Jul 22 02:34 '/sources'
