@@ -13,11 +13,33 @@ Last updated: 2026-07-22.
 | **M1** | Vertical slice, headless | **Code complete.** `tinywin build` wires all 13 stages over the real backends. Cannot be *executed* here — DISM needs elevation. |
 | **M2** | Engines | **Done.** Imaging, registry, ISO builder and unattend all merged. |
 | **M3** | Catalog | **Done.** 73 components, 4 presets, validated against real 25H2 media. |
-| **M4** | UI | In flight (`ui-shell`). |
+| **M4** | UI | **Done.** WinUI 3 shell, Home + the seven workflow pages, MVVM throughout. |
 | **M5** | Portable packaging | In flight (`packaging`). |
 | **M6** | Hardening | In flight (`hardening`). |
 
-`dotnet build` clean · **490 tests passing** · catalog validator clean.
+**Release** build clean with the WinUI app in the solution · **504 tests passing** · catalog
+validator clean.
+
+The UI honours both corrections raised during the build: the Customize page separates the ISO-size
+estimate from the catalog's uncompressed payload figure, and the Review page requires typing
+`UNSERVICEABLE` rather than ticking a box.
+
+## Catalog verification against real media
+
+Everything below is checked against `docs/reference/`, captured elevated from the 26200 ISO.
+
+| Check | Result |
+|---|---|
+| Provisioned appx names | **44 of 45 present.** The one absent is Pro/Education-only and already `optional`. |
+| Image packages not targeted | 4 — Calculator, Notepad, Terminal (deliberate keeps) and `ApplicationCompatibilityEnhancements` (**the one real coverage gap**). |
+| `DisableService` names | **23 of 25 present.** Both absent ones already `optional`. |
+| Scheduled task paths | **18 of 20 present.** Both absent ones already `optional`. |
+
+One inference was found to be **wrong**: the catalog had recorded that `Microsoft Compatibility
+Appraiser` and `ProgramDataUpdater` were removed in 24H2, based on the *running dev machine*. The
+image's TaskCache has both, plus a third the catalog missed. Corrected. Services survived the same
+scrutiny because base-image services sit in the hive whether or not they have run, while scheduled
+tasks are registered at OOBE — which is exactly why one inference held and the other did not.
 
 ## Environment facts
 
