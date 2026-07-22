@@ -43,6 +43,16 @@ internal interface INativeRegistry
 
     bool KeyExists(string keyPath);
 
+    /// <summary>
+    /// Reads a string value, or null if the key or value is absent or is not a string.
+    /// </summary>
+    /// <remarks>
+    /// The only read on this interface, and it exists for exactly one reason: removing a scheduled
+    /// task means looking up its GUID under <c>TaskCache\Tree</c> before the deletes can be aimed.
+    /// It is deliberately not surfaced on <c>IHiveSession</c> — see <see cref="TaskCache"/>.
+    /// </remarks>
+    string? GetStringValue(string keyPath, string valueName);
+
     /// <summary>Creates <paramref name="keyPath"/> and any missing ancestors. No-op if it exists.</summary>
     void CreateKey(string keyPath);
 
