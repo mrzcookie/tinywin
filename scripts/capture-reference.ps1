@@ -165,6 +165,58 @@ Interpretation:
     $longest = ($maxName | Select-Object -First 1).Name.Length
     if ($longest -gt 103) { Write-Warn "Longest basename is $longest chars - EXCEEDS the 103-char Joliet limit!" }
     else { Write-Ok "08-longest-basenames.txt  (longest = $longest chars, within the 103 limit)" }
+
+    # --- Offline registry hives -----------------------------------------------------
+    # docs/catalog-gaps.md section 3.3: registry actions are the LEAST verified part of the
+    # catalog. Everything else was verified with 7-Zip unelevated; the hives could not be,
+    # because reg load needs admin. This section is the reason the script still matters.
+    #
+    # Uses reg.exe rather than in-process .NET on purpose: reg.exe exits after each call, so
+    # it cannot pin a hive open the way a stray managed RegistryKey finalizer can. That is
+    # exactly the hazard docs/PLAN.md section 3.3 is about, and this side-steps it entirely.
+
+    Write-Step "Capturing offline registry hives"
+    $hives = @(
+        @{ Mount = 'TW_SOFTWARE'; Path = "$mountDir\Windows\System32\config\SOFTWARE" },
+        @{ Mount = 'TW_SYSTEM';   Path = "$mountDir\Windows\System32\config\SYSTEM" },
+        @{ Mount = 'TW_NTUSER';   Path = "$mountDir\Users\Default\ntuser.dat" }
+    )
+    $loaded = @()
+    try {
+        foreach ($h in $hives) {
+            if (-not (Test-Path $h.Path)) { Write-Warn "Missing hive: $($h.Path)"; continue }
+            & reg.exe load "HKLM\$($h.Mount)" $h.Path 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { $loaded += $h.Mount; Write-Ok "Loaded $($h.Mount)" }
+            else { Write-Warn "Failed to load $($h.Mount) (exit $LASTEXITCODE)" }
+        }
+
+        # The TaskCache registration behind docs/catalog-gaps.md section 3.1 - this is where
+        # scheduled tasks actually live in an offline image, not in Windows\System32\Tasks.
+        if ($loaded -contains 'TW_SOFTWARE') {
+            & reg.exe query "HKLM\TW_SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" /s `
+                > "$OutputDir\09-taskcache-tree.txt" 2>&1
+            Write-Ok "09-taskcache-tree.txt"
+
+            & reg.exe export "HKLM\TW_SOFTWARE\Policies" "$OutputDir\10-software-policies.reg" /y 2>&1 | Out-Null
+            Write-Ok "10-software-policies.reg"
+        }
+        if ($loaded -contains 'TW_SYSTEM') {
+            & reg.exe query "HKLM\TW_SYSTEM\ControlSet001\Services" > "$OutputDir\11-services.txt" 2>&1
+            Write-Ok "11-services.txt"
+        }
+        if ($loaded -contains 'TW_NTUSER') {
+            & reg.exe export "HKLM\TW_NTUSER\Software\Microsoft\Windows\CurrentVersion" `
+                "$OutputDir\12-ntuser-currentversion.reg" /y 2>&1 | Out-Null
+            Write-Ok "12-ntuser-currentversion.reg"
+        }
+    }
+    finally {
+        foreach ($m in $loaded) {
+            & reg.exe unload "HKLM\$m" 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { Write-Ok "Unloaded $m" }
+            else { Write-Warn "FAILED to unload $m - the image may not dismount. Check with: reg query HKLM\$m" }
+        }
+    }
 }
 finally {
     if ($mounted) {
