@@ -20,6 +20,12 @@ public sealed class BuildContext
     public MountedImage? MountedImage { get; set; }
     public WindowsImageInfo? ImageInfo { get; set; }
 
+    /// <summary>
+    /// El Torito values read off the source ISO during Inspect, so the rebuilt image reproduces
+    /// them rather than guessing. See docs/spikes/iso-build.md section 7.
+    /// </summary>
+    public IsoBootGeometry? BootGeometry { get; set; }
+
     private readonly List<ActionOutcome> _outcomes = [];
     private readonly List<string> _warnings = [];
 
