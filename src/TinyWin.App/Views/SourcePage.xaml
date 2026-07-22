@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TinyWin.App.Views.SourcePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:vm="using:TinyWin.App.ViewModels">
+
+    <ScrollViewer>
+        <StackPanel Padding="{StaticResource PagePadding}" Spacing="18" MaxWidth="{StaticResource PageMaxWidth}" HorizontalAlignment="Left">
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Source" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Text="Choose the Windows 11 ISO to work from. It is read, never modified."
+                           Style="{StaticResource BodyTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <!-- Drop target. Browse is the primary path: an elevated window does not receive drags
+                 from a non-elevated Explorer, so drag-and-drop is a convenience, not the route. -->
+            <Border x:Name="DropZone"
+                    AllowDrop="True"
+                    DragOver="OnDragOver"
+                    Drop="OnDrop"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="28">
+                <StackPanel Spacing="10" HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE7C3;" FontSize="32" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="Drop a Windows 11 ISO here" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" />
+                    <TextBlock Text="or"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               HorizontalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <Button Content="Browse for an ISO"
+                            HorizontalAlignment="Center"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Command="{x:Bind ViewModel.BrowseCommand}" />
+                    <TextBlock x:Name="PathText"
+                               Text="{x:Bind ViewModel.IsoPath, Mode=OneWay}"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               HorizontalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                               Visibility="{x:Bind ViewModel.IsoPath, Mode=OneWay, Converter={StaticResource StringToVisibility}}" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="10"
+                        Visibility="{x:Bind ViewModel.IsInspecting, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <muxc:ProgressRing IsActive="True" Width="18" Height="18" />
+                <TextBlock Text="Inspecting the image…" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <muxc:InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                          IsClosable="False"
+                          Severity="Error"
+                          Title="That file will not work"
+                          Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+
+            <muxc:InfoBar IsOpen="{x:Bind ViewModel.ShowUnverifiedWarning, Mode=OneWay}"
+                          IsClosable="False"
+                          Severity="Warning"
+                          Title="Newer than the validated branch"
+                          Message="{x:Bind ViewModel.MediaSupportText, Mode=OneWay}" />
+
+            <muxc:InfoBar IsOpen="{x:Bind ViewModel.ShowUnsupportedError, Mode=OneWay}"
+                          IsClosable="False"
+                          Severity="Error"
+                          Title="Unsupported media"
+                          Message="{x:Bind ViewModel.MediaSupportText, Mode=OneWay}" />
+
+            <!-- Everything below appears only once an image has been inspected. -->
+            <StackPanel Spacing="18" Visibility="{x:Bind ViewModel.HasEditions, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20">
+                    <Grid ColumnSpacing="32" RowSpacing="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Size" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Bind ViewModel.SourceSizeText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="Build" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.BuildText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Architecture" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{x:Bind ViewModel.ArchitectureText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="Language" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="{x:Bind ViewModel.LanguageText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    </Grid>
+                </Border>
+
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Edition" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="TinyWin builds a single edition. Pick the index to keep."
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+
+                <GridView ItemsSource="{x:Bind ViewModel.Editions}"
+                          SelectedItem="{x:Bind ViewModel.SelectedEdition, Mode=TwoWay}"
+                          SelectionMode="Single"
+                          IsItemClickEnabled="False">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:EditionCard">
+                            <StackPanel Width="230" Padding="14" Spacing="4"
+                                        AutomationProperties.Name="{x:Bind Details}">
+                                <TextBlock Text="{x:Bind Name}" Style="{StaticResource BodyStrongTextBlockStyle}" TextWrapping="Wrap" />
+                                <TextBlock Text="{x:Bind IndexText}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{x:Bind Details}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                                <TextBlock Text="{x:Bind SizeText}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+
+                <Button Content="Next: choose what to remove" Click="OnNext" HorizontalAlignment="Left" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

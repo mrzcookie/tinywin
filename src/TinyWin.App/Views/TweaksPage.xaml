@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TinyWin.App.Views.TweaksPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <ScrollViewer>
+        <StackPanel Padding="{StaticResource PagePadding}" Spacing="18" MaxWidth="{StaticResource PageMaxWidth}" HorizontalAlignment="Left">
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Tweaks" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Style="{StaticResource BodyTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"
+                           MaxWidth="760"
+                           Text="Setup behaviour, written into autounattend.xml. Nothing here removes anything, and everything here can be changed after Windows is installed." />
+            </StackPanel>
+
+            <TextBlock Text="Hardware requirement bypasses" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,8,0,0" />
+            <Border Style="{StaticResource TweakCardStyle}">
+                <StackPanel>
+                    <muxc:ToggleSwitch Header="Bypass the TPM 2.0 check"
+                                       OffContent="Off" OnContent="On"
+                                       IsOn="{x:Bind ViewModel.BypassTpmCheck, Mode=TwoWay}" />
+                    <TextBlock Style="{StaticResource TweakHintStyle}" Text="Lets Setup install on hardware without a TPM." />
+
+                    <muxc:ToggleSwitch Header="Bypass the Secure Boot check"
+                                       OffContent="Off" OnContent="On"
+                                       IsOn="{x:Bind ViewModel.BypassSecureBootCheck, Mode=TwoWay}" />
+                    <TextBlock Style="{StaticResource TweakHintStyle}" Text="Lets Setup install where Secure Boot is unavailable or turned off." />
+
+                    <muxc:ToggleSwitch Header="Bypass the 4 GB RAM check"
+                                       OffContent="Off" OnContent="On"
+                                       IsOn="{x:Bind ViewModel.BypassRamCheck, Mode=TwoWay}" />
+                    <TextBlock Style="{StaticResource TweakHintStyle}" Text="Lets Setup install on machines below the memory floor." />
+
+                    <muxc:ToggleSwitch Header="Bypass the CPU compatibility check"
+                                       OffContent="Off" OnContent="On"
+                                       IsOn="{x:Bind ViewModel.BypassCpuCheck, Mode=TwoWay}" />
+                    <TextBlock Style="{StaticResource TweakHintStyle}" Text="Lets Setup install on processors not on Microsoft's supported list." />
+
+                    <muxc:ToggleSwitch Header="Bypass the disk size check"
+                                       OffContent="Off" OnContent="On"
+                                       IsOn="{x:Bind ViewModel.BypassStorageCheck, Mode=TwoWay}" />
+                    <TextBlock Style="{StaticResource TweakHintStyle}" Text="Lets Setup install on volumes below the 64 GB floor." />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Out-of-box experience" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,8,0,0" />
+            <Border Style="{StaticResource TweakCardStyle}">
+                <StackPanel>
+                    <muxc:ToggleSwitch Header="Allow a local account"
+                                       OffContent="Off" OnContent="On"
+                                       IsOn="{x:Bind ViewModel.AllowLocalAccount, Mode=TwoWay}" />
+                    <TextBlock Style="{StaticResource TweakHintStyle}" Text="Skips the &quot;you must sign in with a Microsoft account&quot; screen (the BypassNRO behaviour)." />
+
+                    <muxc:ToggleSwitch Header="Skip the privacy questions"
+                                       OffContent="Off" OnContent="On"
+                                       IsOn="{x:Bind ViewModel.SkipPrivacySettings, Mode=TwoWay}" />
+                    <TextBlock Style="{StaticResource TweakHintStyle}" Text="Answers the OOBE privacy screens with everything off rather than prompting." />
+
+                    <muxc:ToggleSwitch Header="Skip OEM registration"
+                                       OffContent="Off" OnContent="On"
+                                       IsOn="{x:Bind ViewModel.SkipOemRegistration, Mode=TwoWay}" />
+                    <TextBlock Style="{StaticResource TweakHintStyle}" Text="Removes the manufacturer registration step from OOBE." />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Storage" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,8,0,0" />
+            <Border Style="{StaticResource TweakCardStyle}">
+                <StackPanel>
+                    <muxc:ToggleSwitch Header="Prevent automatic BitLocker encryption"
+                                       OffContent="Off" OnContent="On"
+                                       IsOn="{x:Bind ViewModel.PreventDeviceEncryption, Mode=TwoWay}" />
+                    <TextBlock Style="{StaticResource TweakHintStyle}" Text="Stops Windows silently encrypting the system drive on first boot, which otherwise makes recovering files from another machine much harder." />
+                </StackPanel>
+            </Border>
+
+            <muxc:InfoBar IsOpen="True"
+                          IsClosable="False"
+                          Severity="Informational"
+                          Title="These are install-time settings"
+                          Message="Bypassing a hardware check does not make the hardware supported. Windows may refuse feature updates on a machine that does not meet the requirements." />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TinyWin.App.Views.DonePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:vm="using:TinyWin.App.ViewModels">
+
+    <ScrollViewer>
+        <StackPanel Padding="{StaticResource PagePadding}" Spacing="16" MaxWidth="{StaticResource PageMaxWidth}" HorizontalAlignment="Left">
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="{x:Bind ViewModel.HeadlineText, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.OutputPathText, Mode=OneWay}"
+                           Style="{StaticResource BodyTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           IsTextSelectionEnabled="True"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!-- Before and after. -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                <Grid ColumnSpacing="40">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Text="Before" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.SizeBeforeText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="After" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.SizeAfterText, Mode=OneWay}"
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Spacing="2">
+                        <TextBlock Text="Saved" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.SizeDeltaText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="3" Spacing="2">
+                        <TextBlock Text="Took" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.DurationText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Action counts. The no-target count is never hidden. -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                <StackPanel Spacing="12">
+                    <Grid ColumnSpacing="40">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="Applied" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            <TextBlock Text="{x:Bind ViewModel.AppliedCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock Text="No target" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            <TextBlock Text="{x:Bind ViewModel.NoTargetCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Spacing="2">
+                            <TextBlock Text="Failed" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            <TextBlock Text="{x:Bind ViewModel.FailedCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <muxc:InfoBar IsOpen="{x:Bind ViewModel.HasNoTargets, Mode=OneWay}"
+                                  IsClosable="False"
+                                  Severity="Warning"
+                                  Title="Some actions found nothing to do"
+                                  Message="{x:Bind ViewModel.NoTargetExplanation, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+
+            <muxc:Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Header="Per-component results">
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Tallies}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ComponentTally">
+                            <Grid ColumnSpacing="16" Padding="0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{x:Bind Name}" Style="{StaticResource BodyTextBlockStyle}" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{x:Bind CountsText}"
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           FontFamily="Consolas"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </muxc:Expander>
+
+            <muxc:Expander HorizontalAlignment="Stretch"
+                           HorizontalContentAlignment="Stretch"
+                           Header="Warnings"
+                           Visibility="{x:Bind ViewModel.HasWarnings, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Warnings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock Text="{x:Bind}" TextWrapping="Wrap" Margin="0,0,0,6" Style="{StaticResource BodyTextBlockStyle}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </muxc:Expander>
+
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
+                <Button Content="Reveal ISO in Explorer"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.RevealInExplorerCommand}" />
+                <Button Content="Save these choices as a preset" Command="{x:Bind ViewModel.SaveAsPresetCommand}" />
+                <Button Content="View the full log" Click="OnViewLog" />
+            </StackPanel>
+
+            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                       Style="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       TextWrapping="Wrap"
+                       Visibility="{x:Bind ViewModel.StatusMessage, Mode=OneWay, Converter={StaticResource StringToVisibility}}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

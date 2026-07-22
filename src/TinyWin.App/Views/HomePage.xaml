@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TinyWin.App.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <ScrollViewer>
+        <StackPanel Padding="{StaticResource PagePadding}" Spacing="20" MaxWidth="{StaticResource PageMaxWidth}" HorizontalAlignment="Left">
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="TinyWin" Style="{StaticResource TitleLargeTextBlockStyle}" />
+                <TextBlock Style="{StaticResource BodyTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"
+                           MaxWidth="720"
+                           Text="Turns a Windows 11 ISO you already have into a smaller one, with every removal opt-out. Nothing is removed that you have not ticked, and every component tells you what it breaks before you tick it." />
+            </StackPanel>
+
+            <muxc:InfoBar IsOpen="True"
+                          IsClosable="False"
+                          Severity="Informational"
+                          Title="What this tool does not do"
+                          Message="TinyWin never downloads Windows and never touches activation or licensing. It only modifies media you supply, and it always writes a new ISO — your source file is left alone." />
+
+            <TextBlock Text="How it goes" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,8,0,0" />
+
+            <muxc:ItemsRepeater x:Name="StepsRepeater">
+                <muxc:ItemsRepeater.Layout>
+                    <muxc:UniformGridLayout MinItemWidth="250" MinItemHeight="130" MinRowSpacing="12" MinColumnSpacing="12" />
+                </muxc:ItemsRepeater.Layout>
+                <muxc:ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <TextBlock Text="{x:Bind}" TextWrapping="Wrap" Style="{StaticResource BodyTextBlockStyle}" />
+                        </Border>
+                    </DataTemplate>
+                </muxc:ItemsRepeater.ItemTemplate>
+            </muxc:ItemsRepeater>
+
+            <Button Content="Get started" Style="{StaticResource AccentButtonStyle}" Click="OnGetStarted" Margin="0,12,0,0" />
+
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                       TextWrapping="Wrap"
+                       MaxWidth="720"
+                       Margin="0,16,0,0"
+                       Text="TinyWin is free software under the GNU GPL v3. Supported media: Windows 11 24H2 and 25H2 (builds 26100–26299). Newer builds are allowed but unverified; 23H2 and older are refused." />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
