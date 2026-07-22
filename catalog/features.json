@@ -220,7 +220,7 @@
       "id": "features.remotedesktop",
       "name": "Remote Desktop",
       "category": "Optional Features",
-      "description": "Blocks inbound Remote Desktop connections and removes the RemoteApp client capability. The mstsc client stays.",
+      "description": "Blocks inbound Remote Desktop connections by policy and stops the terminal service. The mstsc client stays.",
       "risk": "Caution",
       "defaultIn": ["aggressive", "core"],
       "estimatedSavingsMb": 2,
@@ -233,11 +233,6 @@
         "Remote Assistance and some remote management tooling that tunnels over the terminal service also stop"
       ],
       "actions": [
-        {
-          "type": "RemoveCapability",
-          "name": "Windows.TerminalServices.AppServerClient~~~~0.0.1.0",
-          "optional": true
-        },
         { "type": "DisableService", "name": "TermService", "startType": 4 },
         {
           "type": "SetRegistry",

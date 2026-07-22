@@ -63,7 +63,6 @@
         "Apps that bundle their own WebView2 installer will silently reinstall it"
       ],
       "actions": [
-        { "type": "RemoveCapability", "name": "Edge.Webview2.Platform~~~~0.0.1.0", "optional": true },
         { "type": "DeleteDirectory", "path": "Windows\\System32\\Microsoft-Edge-WebView", "optional": true },
         { "type": "DeleteDirectory", "path": "Program Files (x86)\\Microsoft\\EdgeWebView", "optional": true }
       ]
