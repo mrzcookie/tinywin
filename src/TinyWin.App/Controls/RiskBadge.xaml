@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="TinyWin.App.Controls.RiskBadge"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border x:Name="Chip"
+            CornerRadius="4"
+            Padding="8,2"
+            BorderThickness="1"
+            VerticalAlignment="Center">
+        <TextBlock x:Name="Label"
+                   FontSize="11"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center" />
+    </Border>
+</UserControl>

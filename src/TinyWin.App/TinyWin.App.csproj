@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Hand-authored because the WinUI 3 project templates are not installed on this machine.
+    The property combination below is the one docs/PLAN.md section 3.4 identified as the only
+    supported route to a portable single-exe WinUI 3 app: unpackaged (WindowsPackageType=None),
+    carrying its own Windows App SDK and .NET runtime.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(TinyWinAppTargetFramework)</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>$(TinyWinSupportedOSPlatformVersion)</SupportedOSPlatformVersion>
+    <RootNamespace>TinyWin.App</RootNamespace>
+    <AssemblyName>TinyWin</AssemblyName>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <!-- Not for packaging: PublishSingleFile needs the MSIX tooling to embed resources.pri. -->
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <!-- DISM needs elevation, so the whole app runs elevated. See app.manifest. -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <DefaultLanguage>en-US</DefaultLanguage>
+  </PropertyGroup>
+
+  <!--
+    Escape hatch for inspecting the UI from an ordinary session: `-p:TinyWinElevation=false`.
+    Never set in CI or for a shipped build.
+  -->
+  <PropertyGroup Condition="'$(TinyWinElevation)' == 'false'">
+    <ApplicationManifest>app.asinvoker.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.3.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TinyWin.Core\TinyWin.Core.csproj" />
+    <ProjectReference Include="..\TinyWin.Catalog\TinyWin.Catalog.csproj" />
+  </ItemGroup>
+
+</Project>

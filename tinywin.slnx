@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/TinyWin.App/TinyWin.App.csproj" />
     <Project Path="src/TinyWin.Catalog/TinyWin.Catalog.csproj" />
     <Project Path="src/TinyWin.Cli/TinyWin.Cli.csproj" />
     <Project Path="src/TinyWin.Core/TinyWin.Core.csproj" />
