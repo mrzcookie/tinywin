@@ -1,0 +1,9 @@
+﻿\Microsoft
+\Microsoft\Windows
+\Microsoft\Windows\DeviceLicensingService
+\Microsoft\Windows\PLA
+\Microsoft\Windows\RemoteApp and Desktop Connections Update
+\Microsoft\Windows\SyncCenter
+\Microsoft\Windows\TaskScheduler
+\Microsoft\Windows\WCM
+\Microsoft\Windows\PLA\System

@@ -26,11 +26,19 @@
 [CmdletBinding()]
 param(
     [string]$IsoPath = "C:\Users\Zachary\ISOs\Win11_25H2_English_x64_v2.iso",
-    [string]$OutputDir = "$PSScriptRoot\..\docs\reference",
+    [string]$OutputDir,
     [int]$Index = 1
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Resolved here, not as a parameter default. Under Windows PowerShell 5.1 $PSScriptRoot is not
+# reliably populated while the param block is being bound, and an empty value silently turned
+# "$PSScriptRoot\..\docs\reference" into "\..\docs\reference" -> C:\docs\reference.
+if (-not $OutputDir) {
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $OutputDir = Join-Path $scriptDir '..\docs\reference'
+}
 
 function Write-Step { param($m) Write-Host "`n=== $m ===" -ForegroundColor Cyan }
 function Write-Ok   { param($m) Write-Host "  $m" -ForegroundColor Green }
