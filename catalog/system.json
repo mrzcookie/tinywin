@@ -2,97 +2,124 @@
   "schemaVersion": 1,
   "components": [
     {
-      "id": "privacy.telemetry",
-      "name": "Telemetry & Diagnostics",
-      "category": "Telemetry & Privacy",
-      "description": "Disables diagnostic data collection, the advertising ID, tailored experiences and the compatibility appraiser tasks.",
-      "risk": "Safe",
-      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
-      "estimatedSavingsMb": 40,
+      "id": "system.search.index",
+      "name": "Windows Search Index",
+      "category": "System (caution)",
+      "description": "Removes the search indexer feature and disables the Windows Search service. Search still works, but by scanning rather than by index.",
+      "risk": "Breaking",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 30,
       "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
       "requires": [],
       "conflicts": [],
-      "breaks": [],
+      "breaks": [
+        "Start menu search no longer finds documents or settings by content, only apps by name",
+        "File Explorer search falls back to a live directory scan and becomes very slow on large folders",
+        "Outlook classic reports that search is unavailable and offers no results at all",
+        "Any app using the Windows Search API — including several file managers — returns empty results"
+      ],
       "actions": [
-        {
-          "type": "SetRegistry",
-          "hive": "Software",
-          "key": "Policies\\Microsoft\\Windows\\DataCollection",
-          "valueName": "AllowTelemetry",
-          "kind": "Dword",
-          "data": 0
-        },
-        {
-          "type": "SetRegistry",
-          "hive": "NtUser",
-          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
-          "valueName": "Enabled",
-          "kind": "Dword",
-          "data": 0
-        },
-        {
-          "type": "SetRegistry",
-          "hive": "NtUser",
-          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Privacy",
-          "valueName": "TailoredExperiencesWithDiagnosticDataEnabled",
-          "kind": "Dword",
-          "data": 0
-        },
-        { "type": "DisableService", "name": "dmwappushservice", "startType": 4 },
-        {
-          "type": "RemoveScheduledTask",
-          "name": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser",
-          "optional": true
-        },
-        {
-          "type": "RemoveScheduledTask",
-          "name": "\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater",
-          "optional": true
-        }
+        { "type": "DisableFeature", "name": "SearchEngine-Client-Package", "optional": true },
+        { "type": "DisableService", "name": "WSearch", "startType": 4 }
       ]
     },
     {
-      "id": "content.sponsored",
-      "name": "Sponsored Content & Suggestions",
-      "category": "Bing & Content",
-      "description": "Turns off preinstalled promotional apps, Start menu suggestions, lock screen spotlight ads and consumer features.",
-      "risk": "Safe",
-      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "id": "system.systemrestore",
+      "name": "System Restore",
+      "category": "System (caution)",
+      "description": "Disables System Restore and its scheduled checkpoint creation by policy.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
       "estimatedSavingsMb": 0,
       "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
       "requires": [],
       "conflicts": [],
-      "breaks": [],
+      "breaks": [
+        "No restore points are created, so a bad driver or update cannot be rolled back from WinRE",
+        "The System Protection tab in System Properties is present but does nothing",
+        "Some installers create a restore point as a safety step and will log a failure instead"
+      ],
       "actions": [
         {
           "type": "SetRegistry",
           "hive": "Software",
-          "key": "Policies\\Microsoft\\Windows\\CloudContent",
-          "valueName": "DisableWindowsConsumerFeatures",
+          "key": "Policies\\Microsoft\\Windows NT\\SystemRestore",
+          "valueName": "DisableSR",
           "kind": "Dword",
           "data": 1
         },
         {
           "type": "SetRegistry",
-          "hive": "NtUser",
-          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
-          "valueName": "SilentInstalledAppsEnabled",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows NT\\SystemRestore",
+          "valueName": "DisableConfig",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\SystemRestore\\SR",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "system.reservedstorage",
+      "name": "Reserved Storage",
+      "category": "System (caution)",
+      "description": "Turns off the ~7 GB reserve Windows sets aside for updates and temporary files.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Feature updates can fail partway through on a nearly full disk instead of being blocked cleanly up front",
+        "Windows will not automatically free space for an update, so you have to manage disk space yourself"
+      ],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Microsoft\\Windows\\CurrentVersion\\ReserveManager",
+          "valueName": "ShippedWithReserves",
           "kind": "Dword",
           "data": 0
         },
         {
           "type": "SetRegistry",
-          "hive": "NtUser",
-          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
-          "valueName": "SystemPaneSuggestionsEnabled",
+          "hive": "Software",
+          "key": "Microsoft\\Windows\\CurrentVersion\\ReserveManager",
+          "valueName": "PassedPolicy",
           "kind": "Dword",
           "data": 0
-        },
+        }
+      ]
+    },
+    {
+      "id": "system.deviceencryption",
+      "name": "Automatic Device Encryption",
+      "category": "System (caution)",
+      "description": "Stops Windows silently BitLocker-encrypting the system drive during setup on capable hardware.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "The system drive is left unencrypted, so anyone who can boot from USB can read it",
+        "You can still turn BitLocker on by hand afterwards; this only stops it happening without being asked"
+      ],
+      "actions": [
         {
-          "type": "DeleteRegistryKey",
-          "hive": "NtUser",
-          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager\\SuggestedApps",
-          "optional": true
+          "type": "SetRegistry",
+          "hive": "System",
+          "key": "ControlSet001\\Control\\BitLocker",
+          "valueName": "PreventDeviceEncryption",
+          "kind": "Dword",
+          "data": 1
         }
       ]
     },
@@ -100,7 +127,7 @@
       "id": "system.defender",
       "name": "Windows Defender",
       "category": "Unserviceable",
-      "description": "Removes Windows Defender entirely. Core preset only, and gated behind a typed confirmation.",
+      "description": "Removes Windows Defender entirely. Core preset only, and gated behind a typed confirmation. Defender is not a removable package on this build family, so this deletes its payload and disables its services instead.",
       "risk": "Unserviceable",
       "defaultIn": ["core"],
       "estimatedSavingsMb": 780,
@@ -114,9 +141,31 @@
         "Some enterprise management and attack-surface-reduction policies stop applying silently"
       ],
       "actions": [
-        { "type": "RemovePackage", "name": "Windows-Defender-Client-Package~31bf3856ad364e35~amd64~~", "optional": true },
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["Microsoft.SecHealthUI"],
+          "optional": true
+        },
+        {
+          "type": "RemovePackage",
+          "name": "Windows-Defender-ApplicationGuard-Inbox-Package~31bf3856ad364e35~amd64~~",
+          "optional": true
+        },
+        {
+          "type": "RemovePackage",
+          "name": "Windows-Defender-Group-Policy-Package~31bf3856ad364e35~amd64~~",
+          "optional": true
+        },
         { "type": "DisableService", "name": "WinDefend", "startType": 4 },
         { "type": "DisableService", "name": "WdNisSvc", "startType": 4 },
+        { "type": "DisableService", "name": "Sense", "startType": 4, "optional": true },
+        { "type": "TakeOwnership", "path": "Program Files\\Windows Defender" },
+        { "type": "DeleteDirectory", "path": "Program Files\\Windows Defender" },
+        {
+          "type": "DeleteDirectory",
+          "path": "Program Files\\Windows Defender Advanced Threat Protection",
+          "optional": true
+        },
         {
           "type": "SetRegistry",
           "hive": "Software",
@@ -124,7 +173,132 @@
           "valueName": "DisableAntiSpyware",
           "kind": "Dword",
           "data": 1
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Windows Defender\\Windows Defender Scheduled Scan",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Windows Defender\\Windows Defender Cache Maintenance",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Windows Defender\\Windows Defender Cleanup",
+          "optional": true
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Windows Defender\\Windows Defender Verification",
+          "optional": true
         }
+      ]
+    },
+    {
+      "id": "system.winre",
+      "name": "Windows Recovery Environment",
+      "category": "Unserviceable",
+      "description": "Deletes WinRE, the recovery image that backs Reset This PC, Startup Repair and the advanced boot options.",
+      "risk": "Unserviceable",
+      "defaultIn": ["core"],
+      "estimatedSavingsMb": 642,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Reset This PC, Startup Repair and System Image Recovery are all gone — a machine that fails to boot must be reinstalled from media",
+        "The advanced startup options menu no longer appears after failed boots",
+        "BitLocker recovery from the boot menu is unavailable, so keep the recovery key somewhere else",
+        "Cannot be restored on the resulting image without a full reinstall"
+      ],
+      "actions": [
+        { "type": "DeleteFile", "path": "Windows\\System32\\Recovery\\Winre.wim" },
+        { "type": "DeleteFile", "path": "Windows\\System32\\Recovery\\ReAgent.xml", "optional": true }
+      ]
+    },
+    {
+      "id": "system.windowsupdate",
+      "name": "Windows Update Stack",
+      "category": "Unserviceable",
+      "description": "Disables the update services and orchestrator so the image never contacts Windows Update.",
+      "risk": "Unserviceable",
+      "defaultIn": ["core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "No security updates, ever — this image will never be patched again",
+        "Driver updates through Windows Update stop, so new hardware may have no driver at all",
+        "Store app updates that route through the update stack also stop",
+        "Turning this back on afterwards is unreliable; the services can be re-enabled but the orchestrator state is already gone"
+      ],
+      "actions": [
+        { "type": "DisableService", "name": "wuauserv", "startType": 4 },
+        { "type": "DisableService", "name": "UsoSvc", "startType": 4 },
+        { "type": "DisableService", "name": "WaaSMedicSvc", "startType": 4 },
+        { "type": "DisableService", "name": "DoSvc", "startType": 4 },
+        { "type": "DisableService", "name": "BITS", "startType": 4 },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+          "valueName": "NoAutoUpdate",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\WindowsUpdate\\Scheduled Start",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "system.winsxs",
+      "name": "Component Store (WinSxS)",
+      "category": "Unserviceable",
+      "description": "Deletes the side-by-side component store. This is the single largest saving available and the single most destructive action in the catalog.",
+      "risk": "Unserviceable",
+      "defaultIn": ["core"],
+      "estimatedSavingsMb": 10690,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "No Windows feature or capability can ever be added, because the payload they install from is gone",
+        "sfc /scannow and DISM /RestoreHealth cannot repair anything and will fail outright",
+        "Cumulative updates cannot apply — this image is frozen at the build it was made from",
+        "Some applications that request a Windows feature at install time will fail rather than prompt",
+        "Cannot be undone: there is no way to rebuild the store on the resulting image"
+      ],
+      "actions": [
+        { "type": "TakeOwnership", "path": "Windows\\WinSxS" },
+        { "type": "DeleteDirectory", "path": "Windows\\WinSxS" }
+      ]
+    },
+    {
+      "id": "system.servicing",
+      "name": "Servicing Stack",
+      "category": "Unserviceable",
+      "description": "Deletes the servicing stack itself. Only coherent once the component store is already gone.",
+      "risk": "Unserviceable",
+      "defaultIn": ["core"],
+      "estimatedSavingsMb": 101,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": ["system.winsxs"],
+      "conflicts": [],
+      "breaks": [
+        "DISM and the package manager stop working entirely on the resulting image",
+        "Optional features cannot be listed, let alone enabled or disabled",
+        "The image cannot be serviced offline either — a future TinyWin run against it will fail at the apply stage",
+        "Cannot be undone: nothing on the resulting image can rebuild the servicing stack"
+      ],
+      "actions": [
+        { "type": "TakeOwnership", "path": "Windows\\servicing" },
+        { "type": "DeleteDirectory", "path": "Windows\\servicing" }
       ]
     }
   ]

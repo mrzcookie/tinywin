@@ -68,6 +68,19 @@ public interface IIsoBuilder
     Task<IReadOnlyList<IsoBackendAvailability>> ProbeBackendsAsync(
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Reads an existing ISO's El Torito boot setup so a rebuild can reproduce it exactly.
+    /// </summary>
+    /// <remarks>
+    /// Implemented over <c>xorriso -report_el_torito as_mkisofs</c>. Exists because xorriso
+    /// silently accepts a wrong <c>-boot-load-size</c>, so a guessed value yields media that
+    /// fails only at boot — see docs/spikes/iso-build.md section 5. Returns null when the source
+    /// has no readable boot catalog, in which case the caller falls back to defaults.
+    /// </remarks>
+    Task<IsoBootGeometry?> ReadBootGeometryAsync(
+        string isoPath,
+        CancellationToken cancellationToken = default);
+
     Task BuildAsync(
         IsoBuildRequest request,
         IProgress<double>? progress = null,

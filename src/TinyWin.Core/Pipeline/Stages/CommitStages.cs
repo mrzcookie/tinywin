@@ -110,7 +110,7 @@ public sealed class RecompressImageStage(IImagingBackend backend) : IBuildStage
         }));
 
         await backend
-            .ExportImageAsync(source, context.Request.EditionIndex, destination, CompressionType.Recovery, relay, cancellationToken)
+            .ExportImageAsync(source, context.EditionIndex, destination, CompressionType.Recovery, relay, cancellationToken)
             .ConfigureAwait(false);
 
         File.Delete(source);

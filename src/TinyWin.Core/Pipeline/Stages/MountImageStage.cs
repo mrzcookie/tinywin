@@ -37,7 +37,7 @@ public sealed class MountImageStage(IImagingBackend backend) : IBuildStage
         }));
 
         context.MountedImage = await backend
-            .MountAsync(wim, context.Request.EditionIndex, mountPath, relay, cancellationToken)
+            .MountAsync(wim, context.EditionIndex, mountPath, relay, cancellationToken)
             .ConfigureAwait(false);
     }
 

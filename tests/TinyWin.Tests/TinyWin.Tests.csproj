@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\TinyWin.Core\TinyWin.Core.csproj" />
     <ProjectReference Include="..\..\src\TinyWin.Catalog\TinyWin.Catalog.csproj" />
+    <ProjectReference Include="..\..\src\TinyWin.Unattend\TinyWin.Unattend.csproj" />
   </ItemGroup>
 
   <ItemGroup>

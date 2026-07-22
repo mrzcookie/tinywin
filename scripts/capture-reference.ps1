@@ -89,49 +89,68 @@ try {
     & dism.exe /English /Get-WimInfo /WimFile:$wim > "$OutputDir\01-wiminfo.txt" 2>&1
     Write-Ok "01-wiminfo.txt"
 
-    # --- Progress-bar encoding under redirection -----------------------------------
-    # The open question from docs/spikes/dism-backend.md section 5: when stdout is a PIPE
-    # rather than a console, does DISM emit backspaces, bare CR, or suppress the bar?
-    # This decides whether DismExeBackend can report real percentages.
+    # --- Mount READ-ONLY, capturing progress encoding as we go ----------------------
+    # Two jobs at once. The open question from docs/spikes/dism-backend.md section 5 is
+    # whether DISM's progress bar survives stdout redirection, and only a LONG operation
+    # renders one - an enumeration like /Get-WimInfo prints no bar at all, so probing that
+    # would answer nothing. The mount is the natural long operation, so redirect it.
 
-    Write-Step "Probing progress-bar encoding under redirection"
-    $probe = "$env:TEMP\tinywin-progress-probe.bin"
+    # DISM refuses to mount into a non-empty directory (0xc1420114), and a previous failed
+    # run leaves one behind. Clear it. Safe because the mounted-image check above already
+    # confirmed nothing is registered against it.
+    Write-Step "Preparing mount directory"
+    & dism.exe /English /Cleanup-Mountpoints 2>&1 | Out-Null
+    if (Test-Path $mountDir) { Remove-Item $mountDir -Recurse -Force -ErrorAction SilentlyContinue }
+    New-Item -ItemType Directory -Force -Path $mountDir | Out-Null
+    $leftover = @(Get-ChildItem $mountDir -Force -ErrorAction SilentlyContinue).Count
+    if ($leftover -gt 0) { Write-Error "Mount directory is not empty and could not be cleared: $mountDir"; exit 1 }
+    Write-Ok "Empty mount directory ready."
+
+    Write-Step "Mounting image index $Index (read-only, this takes a few minutes)"
     $psi = New-Object Diagnostics.ProcessStartInfo
     $psi.FileName = "dism.exe"
-    $psi.Arguments = "/English /Get-WimInfo /WimFile:`"$wim`" /Index:$Index"
+    $psi.Arguments = "/English /Mount-Wim /WimFile:`"$wim`" /Index:$Index /MountDir:`"$mountDir`" /ReadOnly"
     $psi.RedirectStandardOutput = $true
     $psi.UseShellExecute = $false
     $p = [Diagnostics.Process]::Start($psi)
     $raw = $p.StandardOutput.ReadToEnd()
     $p.WaitForExit()
-    [IO.File]::WriteAllText($probe, $raw)
+
+    if ($p.ExitCode -ne 0) {
+        Write-Host $raw
+        Write-Error "Mount failed with exit code $($p.ExitCode)"
+        exit 1
+    }
+    $mounted = $true
+    Write-Ok "Mounted read-only at $mountDir"
 
     $bytes = [Text.Encoding]::UTF8.GetBytes($raw)
     $bs = ($bytes | Where-Object { $_ -eq 0x08 }).Count
     $cr = ($bytes | Where-Object { $_ -eq 0x0D }).Count
     $lf = ($bytes | Where-Object { $_ -eq 0x0A }).Count
+    $pct = ([regex]::Matches($raw, '\d+(\.\d+)?%')).Count
     @"
 DISM progress encoding under stdout redirection
 ===============================================
+Captured from a real /Mount-Wim, which is long enough to render a progress bar.
+(An enumeration such as /Get-WimInfo prints no bar, so probing it proves nothing.)
+
 backspace (0x08) count : $bs
 CR        (0x0D) count : $cr
 LF        (0x0A) count : $lf
+percent tokens matched : $pct
 
 Interpretation:
-  backspace > 0  -> progress bar is \b-driven and parseable incrementally
-  CR >> LF       -> bar rewrites the line with bare \r
-  both ~0        -> bar is suppressed when not a console; DismExeBackend can only
-                    report stage transitions, not real percentages
+  backspace > 0        -> bar is \b-driven; parseable incrementally
+  CR >> LF             -> bar rewrites the line with bare \r; split on \r to read it
+  percent tokens > 0   -> percentages ARE present in redirected output, whatever the
+                          rewrite mechanism, so DismExeBackend can report real progress
+  all ~0               -> bar suppressed off-console; only stage transitions available
+
+--- raw capture follows ---
+$raw
 "@ | Set-Content "$OutputDir\02-progress-encoding.txt" -Encoding utf8
-    Write-Ok "02-progress-encoding.txt  (backspaces=$bs cr=$cr lf=$lf)"
-
-    # --- Mount READ-ONLY ------------------------------------------------------------
-
-    Write-Step "Mounting image index $Index (read-only, this takes a few minutes)"
-    & dism.exe /English /Mount-Wim /WimFile:$wim /Index:$Index /MountDir:$mountDir /ReadOnly
-    if ($LASTEXITCODE -ne 0) { Write-Error "Mount failed with exit code $LASTEXITCODE"; exit 1 }
-    $mounted = $true
-    Write-Ok "Mounted read-only at $mountDir"
+    Write-Ok "02-progress-encoding.txt  (backspaces=$bs cr=$cr lf=$lf percent-tokens=$pct)"
 
     # --- The ground truth the catalog agent needs -----------------------------------
 
@@ -165,6 +184,58 @@ Interpretation:
     $longest = ($maxName | Select-Object -First 1).Name.Length
     if ($longest -gt 103) { Write-Warn "Longest basename is $longest chars - EXCEEDS the 103-char Joliet limit!" }
     else { Write-Ok "08-longest-basenames.txt  (longest = $longest chars, within the 103 limit)" }
+
+    # --- Offline registry hives -----------------------------------------------------
+    # docs/catalog-gaps.md section 3.3: registry actions are the LEAST verified part of the
+    # catalog. Everything else was verified with 7-Zip unelevated; the hives could not be,
+    # because reg load needs admin. This section is the reason the script still matters.
+    #
+    # Uses reg.exe rather than in-process .NET on purpose: reg.exe exits after each call, so
+    # it cannot pin a hive open the way a stray managed RegistryKey finalizer can. That is
+    # exactly the hazard docs/PLAN.md section 3.3 is about, and this side-steps it entirely.
+
+    Write-Step "Capturing offline registry hives"
+    $hives = @(
+        @{ Mount = 'TW_SOFTWARE'; Path = "$mountDir\Windows\System32\config\SOFTWARE" },
+        @{ Mount = 'TW_SYSTEM';   Path = "$mountDir\Windows\System32\config\SYSTEM" },
+        @{ Mount = 'TW_NTUSER';   Path = "$mountDir\Users\Default\ntuser.dat" }
+    )
+    $loaded = @()
+    try {
+        foreach ($h in $hives) {
+            if (-not (Test-Path $h.Path)) { Write-Warn "Missing hive: $($h.Path)"; continue }
+            & reg.exe load "HKLM\$($h.Mount)" $h.Path 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { $loaded += $h.Mount; Write-Ok "Loaded $($h.Mount)" }
+            else { Write-Warn "Failed to load $($h.Mount) (exit $LASTEXITCODE)" }
+        }
+
+        # The TaskCache registration behind docs/catalog-gaps.md section 3.1 - this is where
+        # scheduled tasks actually live in an offline image, not in Windows\System32\Tasks.
+        if ($loaded -contains 'TW_SOFTWARE') {
+            & reg.exe query "HKLM\TW_SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" /s `
+                > "$OutputDir\09-taskcache-tree.txt" 2>&1
+            Write-Ok "09-taskcache-tree.txt"
+
+            & reg.exe export "HKLM\TW_SOFTWARE\Policies" "$OutputDir\10-software-policies.reg" /y 2>&1 | Out-Null
+            Write-Ok "10-software-policies.reg"
+        }
+        if ($loaded -contains 'TW_SYSTEM') {
+            & reg.exe query "HKLM\TW_SYSTEM\ControlSet001\Services" > "$OutputDir\11-services.txt" 2>&1
+            Write-Ok "11-services.txt"
+        }
+        if ($loaded -contains 'TW_NTUSER') {
+            & reg.exe export "HKLM\TW_NTUSER\Software\Microsoft\Windows\CurrentVersion" `
+                "$OutputDir\12-ntuser-currentversion.reg" /y 2>&1 | Out-Null
+            Write-Ok "12-ntuser-currentversion.reg"
+        }
+    }
+    finally {
+        foreach ($m in $loaded) {
+            & reg.exe unload "HKLM\$m" 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { Write-Ok "Unloaded $m" }
+            else { Write-Warn "FAILED to unload $m - the image may not dismount. Check with: reg query HKLM\$m" }
+        }
+    }
 }
 finally {
     if ($mounted) {

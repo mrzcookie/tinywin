@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "ai.copilot",
+      "name": "Copilot",
+      "category": "AI & Assistant",
+      "description": "Removes the Copilot app and disables it by policy. The app ships only on Home editions of this build, so its removal is a no-op on Pro and Education.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 2,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["Microsoft.Copilot"],
+          "optional": true
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\WindowsCopilot",
+          "valueName": "TurnOffWindowsCopilot",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+          "valueName": "ShowCopilotButton",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    },
+    {
+      "id": "ai.recall",
+      "name": "Recall",
+      "category": "AI & Assistant",
+      "description": "Removes the Recall package and blocks it by policy, so the snapshot timeline can never be enabled on the resulting image.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 40,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "RemovePackage",
+          "name": "UserExperience-Recall-Package~31bf3856ad364e35~amd64~~",
+          "optional": true
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\WindowsAI",
+          "valueName": "AllowRecallEnablement",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\WindowsAI",
+          "valueName": "DisableAIDataAnalysis",
+          "kind": "Dword",
+          "data": 1
+        }
+      ]
+    },
+    {
+      "id": "ai.platform",
+      "name": "Windows AI Platform (Click to Do, AI actions)",
+      "category": "AI & Assistant",
+      "description": "Removes the CoreAI and AI experience system apps that host Click to Do, AI actions in File Explorer, and the on-device model runtime.",
+      "risk": "Breaking",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 30,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": ["ai.recall"],
+      "conflicts": [],
+      "breaks": [
+        "Click to Do and the right-click AI actions in File Explorer disappear entirely",
+        "On Copilot+ hardware, Studio Effects, Live Captions translation and Cocreator in Paint stop working",
+        "Third-party apps calling the Windows AI APIs fail at runtime rather than degrading gracefully",
+        "Settings pages under System and Privacy that host AI options may render blank"
+      ],
+      "actions": [
+        {
+          "type": "RemovePackage",
+          "name": "UserExperience-AIX-Package~31bf3856ad364e35~amd64~~",
+          "optional": true
+        },
+        {
+          "type": "TakeOwnership",
+          "path": "Windows\\SystemApps\\MicrosoftWindows.Client.CoreAI_cw5n1h2txyewy"
+        },
+        {
+          "type": "DeleteDirectory",
+          "path": "Windows\\SystemApps\\MicrosoftWindows.Client.CoreAI_cw5n1h2txyewy"
+        },
+        {
+          "type": "TakeOwnership",
+          "path": "Windows\\SystemApps\\MicrosoftWindows.Client.AIX_cw5n1h2txyewy"
+        },
+        {
+          "type": "DeleteDirectory",
+          "path": "Windows\\SystemApps\\MicrosoftWindows.Client.AIX_cw5n1h2txyewy"
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\WindowsAI",
+          "valueName": "DisableClickToDo",
+          "kind": "Dword",
+          "data": 1
+        }
+      ]
+    },
+    {
+      "id": "ai.speech.online",
+      "name": "Online Speech Recognition",
+      "category": "AI & Assistant",
+      "description": "Turns off cloud-backed speech recognition and the voice-clip sharing that feeds it, leaving offline speech intact.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Speech_OneCore\\Settings\\OnlineSpeechPrivacy",
+          "valueName": "HasAccepted",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\InputPersonalization",
+          "valueName": "AllowInputPersonalization",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    }
+  ]
+}

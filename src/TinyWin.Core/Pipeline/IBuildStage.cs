@@ -26,6 +26,15 @@ public sealed class BuildContext
     /// </summary>
     public IsoBootGeometry? BootGeometry { get; set; }
 
+    /// <summary>
+    /// Set when a stage rewrites the image such that the requested index no longer applies —
+    /// exporting an ESD produces a WIM holding only the selected edition, which is then index 1.
+    /// </summary>
+    public int? EditionIndexOverride { get; set; }
+
+    /// <summary>The index later stages must actually use. Always prefer this over the request.</summary>
+    public int EditionIndex => EditionIndexOverride ?? Request.EditionIndex;
+
     private readonly List<ActionOutcome> _outcomes = [];
     private readonly List<string> _warnings = [];
 
