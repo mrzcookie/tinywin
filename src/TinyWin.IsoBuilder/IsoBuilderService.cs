@@ -61,7 +61,11 @@ public sealed partial class IsoBuilderService : IIsoBuilder
     /// without it falls back to <see cref="IsoDefaults"/> and warns, because xorriso accepts a
     /// wrong <c>-boot-load-size</c> silently and the media then fails only at boot.
     /// </remarks>
-    public async Task<IsoBootGeometry> ReadBootGeometryAsync(
+    // Nullable to match IIsoBuilder: the contract lets an implementation report "no readable boot
+    // catalog" so the caller can fall back to defaults rather than fail the build. This
+    // implementation always produces a geometry (InspectAsync falls back internally and records
+    // the assumption), so it never actually returns null.
+    public async Task<IsoBootGeometry?> ReadBootGeometryAsync(
         string isoPath,
         CancellationToken cancellationToken = default)
     {

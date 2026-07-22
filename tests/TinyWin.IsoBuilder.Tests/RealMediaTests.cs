@@ -50,6 +50,10 @@ public sealed class RealMediaTests
         var geometry = await new IsoBuilderService()
             .ReadBootGeometryAsync(iso, TestContext.Current.CancellationToken);
 
+        // IIsoBuilder allows null for media with no readable boot catalog; real Windows media
+        // always has one, so a null here is itself a failure worth reporting.
+        Assert.NotNull(geometry);
+
         if (!string.Equals(geometry.VolumeId, IsoDefaults.WindowsVolumeId, StringComparison.Ordinal))
         {
             Assert.Skip($"'{geometry.VolumeId}' is not English x64 retail media; load sizes may differ.");
@@ -85,6 +89,7 @@ public sealed class RealMediaTests
 
         var service = new IsoBuilderService();
         var geometry = await service.ReadBootGeometryAsync(iso, TestContext.Current.CancellationToken);
+        Assert.NotNull(geometry);
 
         using var empty = TestFiles.NewTempDirectory();
         var verification = await service.VerifyAsync(
