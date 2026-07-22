@@ -1,0 +1,14 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!--
+      CA1707: underscores in member names. Test methods read as sentences on purpose
+      (Failure_rolls_back_started_stages_in_reverse_order), which is worth more than the
+      naming convention. Suppressed for test projects only.
+    -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+</Project>

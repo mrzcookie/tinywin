@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TinyWin.Catalog/TinyWin.Catalog.csproj" />
+    <Project Path="src/TinyWin.Cli/TinyWin.Cli.csproj" />
+    <Project Path="src/TinyWin.Core/TinyWin.Core.csproj" />
+    <Project Path="src/TinyWin.Imaging/TinyWin.Imaging.csproj" />
+    <Project Path="src/TinyWin.IsoBuilder/TinyWin.IsoBuilder.csproj" />
+    <Project Path="src/TinyWin.Registry/TinyWin.Registry.csproj" />
+    <Project Path="src/TinyWin.Unattend/TinyWin.Unattend.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TinyWin.Tests/TinyWin.Tests.csproj" />
+  </Folder>
+</Solution>

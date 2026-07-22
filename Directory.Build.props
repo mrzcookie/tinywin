@@ -1,0 +1,34 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>TinyWin</Product>
+    <Company>mrzcookie</Company>
+    <Copyright>Copyright (C) 2026 mrzcookie. Licensed under the GNU GPL v3.</Copyright>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <RepositoryUrl>https://github.com/mrzcookie/tinywin</RepositoryUrl>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <!--
+    Windows 11 24H2 (26100) is the minimum supported target. See docs/PLAN.md section 1.
+    Kept here rather than per-project so the whole solution moves together.
+  -->
+  <PropertyGroup>
+    <TinyWinTargetFramework>net10.0</TinyWinTargetFramework>
+    <TinyWinWindowsTargetFramework>net10.0-windows10.0.26100.0</TinyWinWindowsTargetFramework>
+    <TinyWinAppTargetFramework>net10.0-windows10.0.26100.0</TinyWinAppTargetFramework>
+    <TinyWinSupportedOSPlatformVersion>10.0.26100.0</TinyWinSupportedOSPlatformVersion>
+  </PropertyGroup>
+
+</Project>
