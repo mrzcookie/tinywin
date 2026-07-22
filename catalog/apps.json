@@ -5,10 +5,10 @@
       "id": "apps.edge",
       "name": "Microsoft Edge",
       "category": "Microsoft Apps",
-      "description": "Removes the Edge browser, EdgeUpdate and EdgeCore, along with their uninstall entries.",
+      "description": "Removes the Edge browser, EdgeUpdate and EdgeCore, along with their uninstall entries and updater services.",
       "risk": "Caution",
       "defaultIn": ["balanced", "aggressive", "core"],
-      "estimatedSavingsMb": 620,
+      "estimatedSavingsMb": 820,
       "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
       "requires": [],
       "conflicts": [],
@@ -21,6 +21,9 @@
         { "type": "DeleteDirectory", "path": "Program Files (x86)\\Microsoft\\Edge", "optional": true },
         { "type": "DeleteDirectory", "path": "Program Files (x86)\\Microsoft\\EdgeUpdate", "optional": true },
         { "type": "DeleteDirectory", "path": "Program Files (x86)\\Microsoft\\EdgeCore", "optional": true },
+        { "type": "DisableService", "name": "edgeupdate", "startType": 4, "optional": true },
+        { "type": "DisableService", "name": "edgeupdatem", "startType": 4, "optional": true },
+        { "type": "DisableService", "name": "MicrosoftEdgeElevationService", "startType": 4, "optional": true },
         {
           "type": "DeleteRegistryKey",
           "hive": "Software",
@@ -50,7 +53,7 @@
       "description": "Removes the shared WebView2 runtime. Off by default in every preset, including Core — this is opt-in only.",
       "risk": "Breaking",
       "defaultIn": [],
-      "estimatedSavingsMb": 180,
+      "estimatedSavingsMb": 620,
       "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
       "requires": ["apps.edge"],
       "conflicts": [],
@@ -60,7 +63,9 @@
         "Apps that bundle their own WebView2 installer will silently reinstall it"
       ],
       "actions": [
-        { "type": "DeleteDirectory", "path": "Windows\\System32\\Microsoft-Edge-Webview", "optional": true }
+        { "type": "RemoveCapability", "name": "Edge.Webview2.Platform~~~~0.0.1.0", "optional": true },
+        { "type": "DeleteDirectory", "path": "Windows\\System32\\Microsoft-Edge-WebView", "optional": true },
+        { "type": "DeleteDirectory", "path": "Program Files (x86)\\Microsoft\\EdgeWebView", "optional": true }
       ]
     },
     {
@@ -70,7 +75,7 @@
       "description": "Removes the OneDrive setup stub and disables file sync by policy.",
       "risk": "Safe",
       "defaultIn": ["balanced", "aggressive", "core"],
-      "estimatedSavingsMb": 120,
+      "estimatedSavingsMb": 86,
       "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
       "requires": [],
       "conflicts": [],
@@ -90,52 +95,48 @@
       ]
     },
     {
-      "id": "apps.xbox",
-      "name": "Xbox & Gaming",
-      "category": "Gaming",
-      "description": "Removes the Xbox app, Game Bar, Game Overlay, identity provider and TCUI.",
+      "id": "apps.teams",
+      "name": "Microsoft Teams",
+      "category": "Microsoft Apps",
+      "description": "Removes the in-box Teams client. The package is a small stub that downloads the real client on first launch.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 8,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["MSTeams"] }
+      ]
+    },
+    {
+      "id": "apps.outlook",
+      "name": "Outlook for Windows",
+      "category": "Microsoft Apps",
+      "description": "Removes the new Outlook client, which replaced Mail and Calendar on this build family.",
       "risk": "Caution",
       "defaultIn": ["balanced", "aggressive", "core"],
-      "estimatedSavingsMb": 340,
+      "estimatedSavingsMb": 7,
       "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
       "requires": [],
       "conflicts": [],
       "breaks": [
-        "Game Bar screen recording and performance overlay are gone",
-        "Xbox achievements, cloud saves and Game Pass installs stop working",
-        "A few games that call the Xbox identity provider will refuse to launch"
+        "No mail or calendar client at all — Mail and Calendar no longer ship on this build, so nothing replaces it",
+        "mailto: links have no handler until you install a mail client"
       ],
       "actions": [
-        {
-          "type": "RemoveProvisionedAppx",
-          "packages": [
-            "Microsoft.XboxApp",
-            "Microsoft.XboxGameOverlay",
-            "Microsoft.XboxGamingOverlay",
-            "Microsoft.XboxIdentityProvider",
-            "Microsoft.XboxSpeechToTextOverlay",
-            "Microsoft.Xbox.TCUI",
-            "Microsoft.GamingApp"
-          ]
-        },
-        {
-          "type": "SetRegistry",
-          "hive": "Software",
-          "key": "Policies\\Microsoft\\Windows\\GameDVR",
-          "valueName": "AllowGameDVR",
-          "kind": "Dword",
-          "data": 0
-        }
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.OutlookForWindows"] }
       ]
     },
     {
-      "id": "ai.copilot",
-      "name": "Copilot",
-      "category": "AI & Assistant",
-      "description": "Removes the Copilot app and disables it by policy.",
+      "id": "apps.officehub",
+      "name": "Office Hub",
+      "category": "Microsoft Apps",
+      "description": "Removes the Microsoft 365 launcher tile. Present only on Pro and Education editions of this build.",
       "risk": "Safe",
       "defaultIn": ["balanced", "aggressive", "core"],
-      "estimatedSavingsMb": 90,
+      "estimatedSavingsMb": 148,
       "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
       "requires": [],
       "conflicts": [],
@@ -143,15 +144,180 @@
       "actions": [
         {
           "type": "RemoveProvisionedAppx",
-          "packages": ["Microsoft.Copilot", "Microsoft.Windows.Copilot", "Microsoft.BingSearch"]
+          "packages": ["Microsoft.MicrosoftOfficeHub"],
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "apps.devhome",
+      "name": "Dev Home",
+      "category": "Microsoft Apps",
+      "description": "Removes the Dev Home dashboard stub. Absent from N editions.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 2,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["Microsoft.Windows.DevHome"],
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "apps.quickassist",
+      "name": "Quick Assist",
+      "category": "Microsoft Apps",
+      "description": "Removes the remote-assistance client. Now an appx rather than the capability it used to be.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 4,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Nobody can remotely assist this machine through Quick Assist — reinstalling it needs the Store, so remove Quick Assist and the Store together at your peril"
+      ],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["MicrosoftCorporationII.QuickAssist"] }
+      ]
+    },
+    {
+      "id": "apps.family",
+      "name": "Family Safety",
+      "category": "Microsoft Apps",
+      "description": "Removes the Family app and the parental-controls system app. The app ships only on Home editions of this build.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 3,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Parental controls, screen-time limits and content filtering cannot be configured on this machine",
+        "Child accounts still sign in, but the restrictions set on them by a parent are not enforced locally"
+      ],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["MicrosoftCorporationII.MicrosoftFamily"],
+          "optional": true
+        },
+        { "type": "DisableService", "name": "WpcMonSvc", "startType": 4, "optional": true },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Shell\\FamilySafetyMonitor",
+          "optional": true
         },
         {
-          "type": "SetRegistry",
-          "hive": "Software",
-          "key": "Policies\\Microsoft\\Windows\\WindowsCopilot",
-          "valueName": "TurnOffWindowsCopilot",
-          "kind": "Dword",
-          "data": 1
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Shell\\FamilySafetyRefreshTask",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "apps.clipchamp",
+      "name": "Clipchamp",
+      "category": "Microsoft Apps",
+      "description": "Removes the Clipchamp video editor.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 40,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Clipchamp.Clipchamp"] }
+      ]
+    },
+    {
+      "id": "apps.phonelink",
+      "name": "Phone Link & Cross Device",
+      "category": "Microsoft Apps",
+      "description": "Removes Phone Link and the cross-device experience host that backs Android file sharing and call handoff.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 4,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Phone notifications, SMS from the desktop and phone-screen mirroring stop working",
+        "The Android and iPhone panels in Settings under Bluetooth & devices show nothing",
+        "\"Link to Windows\" pairing from a phone silently fails"
+      ],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["Microsoft.YourPhone", "MicrosoftWindows.CrossDevice"]
+        },
+        { "type": "DisableService", "name": "PhoneSvc", "startType": 4, "optional": true }
+      ]
+    },
+    {
+      "id": "apps.powerautomate",
+      "name": "Power Automate Desktop",
+      "category": "Microsoft Apps",
+      "description": "Removes the Power Automate desktop stub.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 1,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.PowerAutomateDesktop"] }
+      ]
+    },
+    {
+      "id": "apps.gethelp",
+      "name": "Get Help",
+      "category": "Microsoft Apps",
+      "description": "Removes the Get Help support app.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 18,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.GetHelp"] }
+      ]
+    },
+    {
+      "id": "apps.store",
+      "name": "Microsoft Store",
+      "category": "Microsoft Apps",
+      "description": "Removes the Store, its purchase broker and the App Installer that provides winget. Core preset only.",
+      "risk": "Breaking",
+      "defaultIn": ["core"],
+      "estimatedSavingsMb": 181,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "No way to install or update any Store app, including ones you later decide you wanted back",
+        "winget stops working, so scripted provisioning of this image breaks too",
+        "Store apps left on the image never receive updates, including security fixes",
+        "Apps that trigger a Store install on first run — Notepad, Terminal, Paint — fail silently instead"
+      ],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": [
+            "Microsoft.WindowsStore",
+            "Microsoft.StorePurchaseApp",
+            "Microsoft.DesktopAppInstaller"
+          ]
         }
       ]
     }
