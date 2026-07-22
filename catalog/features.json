@@ -1,0 +1,304 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "features.wmp.legacy",
+      "name": "Windows Media Player (legacy)",
+      "category": "Optional Features",
+      "description": "Removes the classic Windows Media Player feature and capability. Separate from the modern Media Player app.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 67,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Audio CD ripping and playback have no in-box tool left",
+        "The wmplayer.exe path that some third-party apps shell out to no longer exists",
+        "WMV playback via the legacy player is gone, though the modern Media Player still handles most formats"
+      ],
+      "actions": [
+        { "type": "RemoveCapability", "name": "Media.WindowsMediaPlayer~~~~0.0.12.0", "optional": true },
+        { "type": "DisableFeature", "name": "WindowsMediaPlayer", "optional": true },
+        { "type": "DisableService", "name": "WMPNetworkSvc", "startType": 4, "optional": true },
+        { "type": "DeleteDirectory", "path": "Program Files\\Windows Media Player", "optional": true }
+      ]
+    },
+    {
+      "id": "features.iemode",
+      "name": "Internet Explorer mode",
+      "category": "Optional Features",
+      "description": "Removes the Internet Explorer 11 optional component that backs Edge's IE mode.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 25,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Edge's IE mode stops working, so legacy intranet sites that need it will not load",
+        "Applications embedding the old MSHTML web control may fail to render",
+        "A few enterprise line-of-business apps that host IE fail to start"
+      ],
+      "actions": [
+        { "type": "RemoveCapability", "name": "Browser.InternetExplorer~~~~0.0.11.0", "optional": true },
+        { "type": "DisableFeature", "name": "Internet-Explorer-Optional-amd64", "optional": true }
+      ]
+    },
+    {
+      "id": "features.netfx3",
+      "name": ".NET Framework 3.5",
+      "category": "Optional Features",
+      "description": "Removes the .NET Framework 3.5 on-demand payload. It ships disabled, so this only removes the ability to turn it on offline.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 90,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Older applications targeting .NET 2.0 through 3.5 refuse to start and prompt to install a component that is no longer on the image",
+        "Enabling .NET 3.5 later needs an internet connection or the original media, not just the Optional Features dialog"
+      ],
+      "actions": [
+        { "type": "DisableFeature", "name": "NetFx3", "optional": true },
+        { "type": "RemovePackage", "name": "Microsoft-Windows-NetFx3-OnDemand-Package~31bf3856ad364e35~amd64~~", "optional": true }
+      ]
+    },
+    {
+      "id": "features.xps",
+      "name": "XPS Services",
+      "category": "Optional Features",
+      "description": "Removes the XPS document services and the XPS Document Writer printer.",
+      "risk": "Safe",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 6,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "DisableFeature", "name": "Printing-XPSServices-Features", "optional": true }
+      ]
+    },
+    {
+      "id": "features.printtopdf",
+      "name": "Microsoft Print to PDF",
+      "category": "Optional Features",
+      "description": "Removes the built-in Print to PDF virtual printer.",
+      "risk": "Caution",
+      "defaultIn": ["core"],
+      "estimatedSavingsMb": 3,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "The Microsoft Print to PDF printer disappears, so there is no way to save any document as a PDF without third-party software",
+        "Apps offering a Save as PDF option that routes through the print subsystem lose it too"
+      ],
+      "actions": [
+        { "type": "DisableFeature", "name": "Printing-PrintToPDFServices-Features", "optional": true }
+      ]
+    },
+    {
+      "id": "features.hyperv",
+      "name": "Hyper-V & Virtual Machine Platform",
+      "category": "Optional Features",
+      "description": "Removes the Hyper-V role, the hypervisor platform and the virtual machine platform that WSL 2 and Windows Sandbox build on.",
+      "risk": "Breaking",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 91,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "WSL 2 cannot run at all — this breaks WSL even if you keep the WSL feature itself",
+        "Docker Desktop, Android emulators and Windows Sandbox stop working",
+        "Memory integrity and other virtualization-based security features cannot be enabled",
+        "Third-party hypervisors that rely on the Windows Hypervisor Platform API, including some VirtualBox and VMware configurations, lose hardware acceleration"
+      ],
+      "actions": [
+        { "type": "DisableFeature", "name": "Microsoft-Hyper-V-All", "optional": true },
+        { "type": "DisableFeature", "name": "HypervisorPlatform", "optional": true },
+        { "type": "DisableFeature", "name": "VirtualMachinePlatform", "optional": true }
+      ]
+    },
+    {
+      "id": "features.wsl",
+      "name": "Windows Subsystem for Linux",
+      "category": "Optional Features",
+      "description": "Removes the WSL optional feature. It ships disabled, so this removes the payload rather than turning anything off.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 4,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "WSL cannot be enabled on the resulting image without adding the feature back from other media",
+        "wsl.exe is present but reports that the optional component is missing"
+      ],
+      "actions": [
+        { "type": "DisableFeature", "name": "Microsoft-Windows-Subsystem-Linux", "optional": true }
+      ]
+    },
+    {
+      "id": "features.powershell2",
+      "name": "PowerShell 2.0 engine",
+      "category": "Optional Features",
+      "description": "Removes the deprecated PowerShell 2.0 engine, which is a well-known downgrade-attack surface.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 3,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "DisableFeature", "name": "MicrosoftWindowsPowerShellV2", "optional": true },
+        { "type": "DisableFeature", "name": "MicrosoftWindowsPowerShellV2Root", "optional": true }
+      ]
+    },
+    {
+      "id": "features.powershell.ise",
+      "name": "PowerShell ISE",
+      "category": "Optional Features",
+      "description": "Removes the PowerShell Integrated Scripting Environment.",
+      "risk": "Safe",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 5,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveCapability", "name": "Microsoft.Windows.PowerShell.ISE~~~~0.0.1.0", "optional": true }
+      ]
+    },
+    {
+      "id": "features.legacycomponents",
+      "name": "Legacy Components & DirectPlay",
+      "category": "Optional Features",
+      "description": "Removes the legacy components feature and DirectPlay, the retired multiplayer API for pre-2008 games.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 4,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Games from roughly the XP era that use DirectPlay for multiplayer or copy protection fail to launch",
+        "The compatibility shim that normally offers to install DirectPlay on demand has nothing to install"
+      ],
+      "actions": [
+        { "type": "DisableFeature", "name": "LegacyComponents", "optional": true },
+        { "type": "DisableFeature", "name": "DirectPlay", "optional": true }
+      ]
+    },
+    {
+      "id": "features.legacynet",
+      "name": "Legacy Network Clients",
+      "category": "Optional Features",
+      "description": "Removes Telnet, TFTP, Simple TCP/IP services, SMB Direct, Work Folders and Remote Differential Compression. All ship disabled.",
+      "risk": "Safe",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 8,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "DisableFeature", "name": "TelnetClient", "optional": true },
+        { "type": "DisableFeature", "name": "TFTP", "optional": true },
+        { "type": "DisableFeature", "name": "SimpleTCP", "optional": true },
+        { "type": "DisableFeature", "name": "SmbDirect", "optional": true },
+        { "type": "DisableFeature", "name": "WorkFolders-Client", "optional": true },
+        { "type": "DisableFeature", "name": "MSRDC-Infrastructure", "optional": true }
+      ]
+    },
+    {
+      "id": "features.remotedesktop",
+      "name": "Remote Desktop",
+      "category": "Optional Features",
+      "description": "Blocks inbound Remote Desktop connections and removes the RemoteApp client capability. The mstsc client stays.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 2,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Nobody can connect to this machine over RDP, including you when it is headless",
+        "RemoteApp and Desktop Connections in Control Panel stops working",
+        "Remote Assistance and some remote management tooling that tunnels over the terminal service also stop"
+      ],
+      "actions": [
+        {
+          "type": "RemoveCapability",
+          "name": "Windows.TerminalServices.AppServerClient~~~~0.0.1.0",
+          "optional": true
+        },
+        { "type": "DisableService", "name": "TermService", "startType": 4 },
+        {
+          "type": "SetRegistry",
+          "hive": "System",
+          "key": "ControlSet001\\Control\\Terminal Server",
+          "valueName": "fDenyTSConnections",
+          "kind": "Dword",
+          "data": 1
+        }
+      ]
+    },
+    {
+      "id": "features.stepsrecorder",
+      "name": "Steps Recorder",
+      "category": "Optional Features",
+      "description": "Removes Steps Recorder, which Microsoft has already deprecated.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 2,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveCapability", "name": "App.StepsRecorder~~~~0.0.1.0", "optional": true }
+      ]
+    },
+    {
+      "id": "features.openssh.client",
+      "name": "OpenSSH Client",
+      "category": "Optional Features",
+      "description": "Removes the in-box OpenSSH client.",
+      "risk": "Caution",
+      "defaultIn": ["core"],
+      "estimatedSavingsMb": 13,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "The ssh, scp and sftp commands are gone, which breaks Git over SSH and most remote shell workflows",
+        "Tools that shell out to ssh.exe — including VS Code Remote and Ansible — stop working until you install a replacement"
+      ],
+      "actions": [
+        { "type": "RemoveCapability", "name": "OpenSSH.Client~~~~0.0.1.0", "optional": true }
+      ]
+    },
+    {
+      "id": "features.printmanagement",
+      "name": "Print Management Console",
+      "category": "Optional Features",
+      "description": "Removes the Print Management MMC snap-in. Ordinary printing is unaffected.",
+      "risk": "Safe",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 2,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveCapability", "name": "Print.Management.Console~~~~0.0.1.0", "optional": true }
+      ]
+    }
+  ]
+}
