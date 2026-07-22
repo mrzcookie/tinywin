@@ -152,6 +152,29 @@ normal rather than noteworthy:
 
 ---
 
+## 2b. Cross-check against the elevated DISM capture (2026-07-22)
+
+`docs/reference/03-provisioned-appx.txt` is real `/Get-ProvisionedAppxPackages` output from
+index 1 (Home) of the 26200 media. Cross-checking the catalog against it:
+
+| | |
+|---|---|
+| Appx names the catalog targets | 45 |
+| Confirmed present in index 1 | **44** |
+| Absent | 1 — `Microsoft.MicrosoftOfficeHub`, which is Pro/Education-only per §2 and is already `optional: true`. Correct as written. |
+| Packages in the image the catalog does **not** target | 4 |
+
+The four untargeted packages are `Microsoft.WindowsCalculator`, `Microsoft.WindowsNotepad`,
+`Microsoft.WindowsTerminal` and `Microsoft.ApplicationCompatibilityEnhancements`. The first three
+are deliberate keeps — removing Calculator, Notepad or Terminal is not debloating, it is
+vandalism. **`Microsoft.ApplicationCompatibilityEnhancements` is a genuine candidate** for a
+Telemetry & Privacy entry and is the one real coverage gap this cross-check found.
+
+Method note, because it bit twice: `Select-String` matches line by line, so a `packages` array
+spanning multiple lines is silently missed. Parse the JSON rather than grepping it — the first two
+attempts at this check produced 0/28 and then a list of "untargeted" Xbox packages that were in
+fact targeted all along.
+
 ## 3. Could not verify
 
 Stated plainly rather than guessed at.
