@@ -156,15 +156,26 @@ normal rather than noteworthy:
 
 Stated plainly rather than guessed at.
 
-1. **Scheduled task paths.** The offline image ships only nine task definitions under
-   `Windows\System32\Tasks`; everything else is materialized during setup from the
-   `TaskCache` registration in the SOFTWARE hive. Task paths in the catalog were
-   therefore verified against the *running* 26200 dev machine, not the image. Two
-   consequences:
-   - `\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser` and
-     `\ProgramDataUpdater` do **not** exist on 26200 — Microsoft removed them in 24H2.
-     They are kept in the catalog with `optional: true` and reduced weight, because a
-     pristine image may still register them at OOBE and the cost of trying is nil.
+1. **Scheduled task paths.** ~~Verified against the running dev machine, not the image.~~
+   **Now verified against the image** — `docs/reference/09-taskcache-tree.txt` is an elevated
+   dump of the real `TaskCache\Tree`. **18 of the catalog's 20 task paths are confirmed
+   present.** The two that are not are `\Microsoft\Windows\RetailDemo\CleanupOfflineContent`
+   (no `RetailDemo` subtree exists at all) and
+   `\Microsoft\Windows\Application Experience\PcaPatchDbTask` (no `Pca*` entry exists); both
+   were already `optional: true`, so they report `NoTarget` quietly, which is correct.
+
+   The original text and its two consequences are kept below for the reasoning, with the first
+   corrected:
+   - ~~`\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser` and
+     `\ProgramDataUpdater` do **not** exist on 26200 — Microsoft removed them in 24H2.~~
+     **Corrected 2026-07-22.** This was inferred from the *running dev machine*, and it was
+     wrong. The elevated capture in `docs/reference/09-taskcache-tree.txt` shows both
+     registered in the real offline image's `TaskCache\Tree`, along with a third the catalog
+     had missed: `Microsoft Compatibility Appraiser Exp`. All three are now targeted and
+     `optional` has been cleared, so a future disappearance is reported rather than shrugged off.
+
+     The general lesson is worth keeping: a *serviced install* is not the same artefact as
+     *pristine media*, and inferring image contents from the host is unsound in both directions.
    - **`RemoveScheduledTask` against an offline image almost certainly cannot work by
      deleting a file**, since the file is not there yet. The executor will need to edit
      `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\{Tree,Tasks}`.

@@ -50,13 +50,16 @@
         { "type": "DisableService", "name": "dmwappushservice", "startType": 4 },
         {
           "type": "RemoveScheduledTask",
-          "name": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser",
-          "optional": true
+          "name": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser"
+        },
+        {
+          "type": "RemoveScheduledTask",
+          "name": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser Exp"
         },
         {
           "type": "RemoveScheduledTask",
           "name": "\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater",
-          "optional": true
+          "optional": false
         },
         {
           "type": "RemoveScheduledTask",
