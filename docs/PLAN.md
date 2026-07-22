@@ -236,7 +236,55 @@ nicety. Fold this into M5 packaging.
 Note: `DiscUtils` is **not** a viable option — its El Torito support is partial and its
 UDF write support is inadequate for this.
 
-### 3.2 Provisioned Appx removal from managed code
+### 3.2 Talking to DISM from managed code — **resolved by spike**
+
+> **Spike complete.** See `docs/spikes/dism-backend.md`. Two findings changed this section;
+> the original text is corrected below rather than preserved.
+
+**Finding 1 — appx is already solved.** `Microsoft.Dism` 6.0.0 (MIT, with a first-class
+`net10.0` target) already wraps the undocumented `DismGetProvisionedAppxPackages` and
+`DismRemoveProvisionedAppxPackage` exports, and wraps them *correctly*. A hand-rolled
+`PInvokeAppxBackend` is therefore **struck from this plan**. It would have re-derived
+marshalling that a maintained package already does, while inviting a genuinely nasty bug:
+`dismapi.h` declares its structs under `#pragma pack(push, 1)`, so the obvious
+`LayoutKind.Sequential` P/Invoke gets a 72-byte stride where the truth is 68. That does not
+crash — it yields a plausible-looking package list whose later fields are garbage, drifting
+further each record. "TinyWin removed the wrong package" is exactly the failure our no-op
+reporting cannot catch.
+
+**Finding 2 — `dism.exe` is permanently mandatory, not a fallback.** This is the
+load-bearing result. Neither `/Cleanup-Image /StartComponentCleanup /ResetBase` (stage 9)
+nor `/Export-Image` (stage 11) exists as *any* export in `dismapi.dll`. The full export
+table was checked. Whatever else TinyWin does, those two stages shell out to `dism.exe`, so
+the process-invocation plumbing — argument building, output parsing, exit-code mapping,
+cancellation — has to exist and be well-tested regardless of what else we build.
+
+That makes the original "ship `DismExeBackend` first" decision correct for a stronger reason
+than originally stated, and reduces three backends to two:
+
+| Backend | Role | Covers |
+|---|---|---|
+| `DismExeBackend` | **Ships first. Never removed.** | Everything, including cleanup + export |
+| `ManagedDismBackend` | M2 optimisation | Everything *except* cleanup + export, which delegate to `DismExeBackend` |
+
+`ManagedDismBackend` is a **partial override composing over** the exe backend, not a peer
+implementation. Model it that way explicitly — a `ManagedDismBackend` that throws
+`NotSupportedException` from `CleanupImageAsync` is a trap for the stage engine.
+
+Two consequences for the `IImagingBackend` contract, both already reflected in the shipped
+interface:
+
+- Cleanup and export are first-class members, not incidental helpers.
+- The appx methods in `Microsoft.Dism` have **no progress and no cancellation overloads**.
+  Per-package progress therefore belongs to Core's stage engine, not the backend, and
+  cancellation can only be honoured *between* packages. Appx removal is the longest part of a
+  debloat run, so a UI showing nothing between packages will look hung.
+
+Also surfaced for §3.3: `DismGetRegistryMountPoint(session, DismRegistryHive)` exists, and
+may be a cleaner route than hand-rolled `RegLoadKey`.
+
+<details>
+<summary>Original three-option framing, superseded</summary>
 
 The documented DISM C API does not cover provisioned appx enumeration/removal, but
 `DismRemoveProvisionedAppxPackage` and friends **do exist** as exports in `dismapi.dll`
@@ -260,6 +308,14 @@ interface IImagingBackend {
 **Decision rule:** implement `DismExeBackend` first so the pipeline is unblocked on day
 one. Swap in the native backends behind the same interface as a pure optimization, and
 keep `DismExeBackend` as a runtime-selectable fallback in settings.
+
+</details>
+
+**Still unverified**, pending one elevated run of `docs/spikes/harness/run-elevated.ps1`:
+that the native call returns a sane package list against a live image, the 68-byte record
+stride, and whether `dism.exe` renders its progress bar with backspaces under redirection
+(which decides whether `DismExeBackend` can report real percentages or only stage
+transitions). None of these change the decision above.
 
 ### 3.3 Offline registry hives that refuse to unload
 
