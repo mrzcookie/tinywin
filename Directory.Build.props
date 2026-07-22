@@ -21,6 +21,19 @@
   </PropertyGroup>
 
   <!--
+    Version stamping. The git tag is the source of truth for a release: .github/workflows/release.yml
+    turns tag `v1.2.3` into `-p:Version=1.2.3`, and tools/publish.ps1 does the same locally.
+
+    Anything NOT built from a tag is stamped `-dev`, so a build that escapes a developer's machine
+    or a CI run cannot be mistaken for a release. VersionPrefix above is the number the next tag is
+    expected to carry; bump it in the same commit that tags.
+  -->
+  <PropertyGroup>
+    <VersionSuffix Condition="'$(Version)' == '' AND '$(VersionSuffix)' == ''">dev</VersionSuffix>
+    <SourceRevisionId Condition="'$(SourceRevisionId)' == '' AND '$(GITHUB_SHA)' != ''">$(GITHUB_SHA)</SourceRevisionId>
+  </PropertyGroup>
+
+  <!--
     Windows 11 24H2 (26100) is the minimum supported target. See docs/PLAN.md section 1.
     Kept here rather than per-project so the whole solution moves together.
   -->
