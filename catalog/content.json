@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "content.sponsored",
+      "name": "Sponsored Content & Suggestions",
+      "category": "Bing & Content",
+      "description": "Turns off preinstalled promotional apps, Start menu suggestions, lock screen spotlight ads and consumer features.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\CloudContent",
+          "valueName": "DisableWindowsConsumerFeatures",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "valueName": "SilentInstalledAppsEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "valueName": "SystemPaneSuggestionsEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "valueName": "PreInstalledAppsEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "valueName": "OemPreInstalledAppsEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "DeleteRegistryKey",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager\\SuggestedApps",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "content.bing.apps",
+      "name": "Bing News & Weather",
+      "category": "Bing & Content",
+      "description": "Removes the Bing News and Bing Weather apps. Both are small stubs that pull their content on first run.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 3,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["Microsoft.BingNews", "Microsoft.BingWeather"]
+        }
+      ]
+    },
+    {
+      "id": "content.bing.search",
+      "name": "Web Search in Start",
+      "category": "Bing & Content",
+      "description": "Removes the Bing search integration app and stops the Start menu search box from querying the web.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 1,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.BingSearch"] },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\Explorer",
+          "valueName": "DisableSearchBoxSuggestions",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+          "valueName": "BingSearchEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+          "valueName": "CortanaConsent",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    },
+    {
+      "id": "content.widgets",
+      "name": "Widgets",
+      "category": "Bing & Content",
+      "description": "Removes the Widgets board, which is the single largest app package on the image, and hides its taskbar button.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 163,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["MicrosoftWindows.Client.WebExperience"] },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Dsh",
+          "valueName": "AllowNewsAndInterests",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+          "valueName": "TaskbarDa",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    },
+    {
+      "id": "content.lockscreen",
+      "name": "Lock Screen Spotlight & Tips",
+      "category": "Bing & Content",
+      "description": "Turns off Windows Spotlight rotation, lock screen fun facts and the tips and tricks notifications.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\CloudContent",
+          "valueName": "DisableWindowsSpotlightFeatures",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\CloudContent",
+          "valueName": "DisableSpotlightCollectionOnDesktop",
+          "kind": "Dword",
+          "data": 1
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "valueName": "RotatingLockScreenOverlayEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "valueName": "SubscribedContent-338389Enabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "valueName": "SubscribedContent-338393Enabled",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    }
+  ]
+}
