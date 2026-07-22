@@ -1,0 +1,171 @@
+﻿name: Release
+
+# Tagging is the only way a release happens: `git tag v1.2.3 && git push --tags`.
+# workflow_dispatch builds every asset and uploads them as workflow artifacts WITHOUT
+# publishing a release, which is how this is rehearsed.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to stamp for a dry run (e.g. 0.1.0-rc.1)'
+        required: false
+        default: ''
+
+# contents: write is required to create the release. Nothing else is.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Same constraint as CI: the imaging and registry projects target net10.0-windows, and
+    # the WinUI publish needs the Windows SDK tooling.
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # tools/pack-source.ps1 runs `git archive HEAD`, and the version guard reads the tag.
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # ---------------------------------------------------------------------------------
+      # Version. The tag is the source of truth; VersionPrefix in Directory.Build.props must
+      # agree with it, or the repository is claiming a version it did not tag.
+      # ---------------------------------------------------------------------------------
+      - name: Resolve version
+        id: version
+        run: |
+          if ('${{ github.ref_type }}' -eq 'tag') {
+            $version = '${{ github.ref_name }}' -replace '^v', ''
+          } else {
+            $version = '${{ inputs.version }}'
+            if (-not $version) { $version = '0.0.0-dryrun' }
+          }
+
+          if ($version -notmatch '^(?<core>\d+\.\d+\.\d+)(?:-(?<pre>[0-9A-Za-z.-]+))?$') {
+            throw "Tag '${{ github.ref_name }}' does not resolve to a semantic version. Expected v<major>.<minor>.<patch>[-prerelease]."
+          }
+          $core = $Matches['core']
+          $prerelease = [bool]$Matches['pre']
+
+          $props = Get-Content Directory.Build.props -Raw
+          if ($props -notmatch '<VersionPrefix>([^<]+)</VersionPrefix>') { throw 'VersionPrefix not found in Directory.Build.props.' }
+          $prefix = $Matches[1]
+          if ($prefix -ne $core -and '${{ github.ref_type }}' -eq 'tag') {
+            throw "Tag v$version does not match <VersionPrefix>$prefix</VersionPrefix>. Bump Directory.Build.props in the commit you tag."
+          }
+
+          "version=$version"       >> $env:GITHUB_OUTPUT
+          "prerelease=$prerelease" >> $env:GITHUB_OUTPUT
+          Write-Host "Releasing $version (prerelease: $prerelease)"
+
+      # ---------------------------------------------------------------------------------
+      # GPLv3. First, because it needs no network and no build: a licence gap should fail in
+      # seconds rather than after two self-contained publishes and a 140 MB download.
+      # ---------------------------------------------------------------------------------
+      - name: Check third-party attribution
+        run: ./tools/check-third-party.ps1
+
+      # ---------------------------------------------------------------------------------
+      # A release must not ship untested code, so the CI gate runs again here rather than
+      # trusting that it passed on the commit being tagged.
+      # ---------------------------------------------------------------------------------
+      - name: Restore
+        run: dotnet restore tinywin.slnx
+
+      - name: Build
+        run: dotnet build tinywin.slnx --no-restore --configuration Release -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Test
+        run: dotnet test tinywin.slnx --no-build --configuration Release -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Fetch xorriso and its corresponding source
+        run: ./tools/fetch-xorriso.ps1 -WithSource
+
+      # ---------------------------------------------------------------------------------
+      # Artifacts.
+      # ---------------------------------------------------------------------------------
+      - name: Publish win-x64 and win-arm64
+        run: ./tools/publish.ps1 -Version ${{ steps.version.outputs.version }}
+
+      - name: Pack corresponding source
+        run: ./tools/pack-source.ps1 -Version ${{ steps.version.outputs.version }}
+
+      - name: Verify the asset set is complete
+        id: assets
+        run: |
+          $version = '${{ steps.version.outputs.version }}'
+
+          # Every asset the release must carry, with a floor on its size. The floor is the point:
+          # a truncated download or a publish that quietly produced a stub would otherwise sail
+          # through, and a release missing its source archive is a licence violation.
+          $expected = @(
+            @{ Name = "TinyWin-$version-win-x64.zip";                          MinMB = 100 }
+            @{ Name = "TinyWin-$version-win-arm64.zip";                        MinMB = 100 }
+            @{ Name = "tinywin-$version-source.zip";                           MinMB = 0.1 }
+            @{ Name = "xorriso-bundle-$version-corresponding-source.zip";      MinMB = 100 }
+          )
+
+          $failures = @()
+          foreach ($asset in $expected) {
+            $path = Join-Path 'artifacts' $asset.Name
+            if (-not (Test-Path $path)) { $failures += "missing: $($asset.Name)"; continue }
+            $mb = (Get-Item $path).Length / 1MB
+            if ($mb -lt $asset.MinMB) { $failures += ("too small: {0} is {1:N1} MB, expected at least {2} MB" -f $asset.Name, $mb, $asset.MinMB) }
+            Write-Host ("  {0,-58} {1,8:N1} MB" -f $asset.Name, $mb)
+          }
+          if ($failures) { throw ("Release assets are incomplete:`n  " + ($failures -join "`n  ")) }
+
+      - name: Generate checksums
+        run: |
+          Push-Location artifacts
+          $lines = Get-ChildItem -Filter *.zip -File | Sort-Object Name | ForEach-Object {
+            "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name
+          }
+          Set-Content -Path SHA256SUMS.txt -Value $lines -Encoding ascii
+          Get-Content SHA256SUMS.txt
+          Pop-Location
+
+      # Uploaded unconditionally so a workflow_dispatch rehearsal produces something to inspect.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-assets
+          path: |
+            artifacts/*.zip
+            artifacts/SHA256SUMS.txt
+          if-no-files-found: error
+
+      # ---------------------------------------------------------------------------------
+      # Publish. Tags only - a dispatch run stops at the artifact upload above.
+      #
+      # GPLv3 section 6 requires the corresponding source to be conveyed from the same place
+      # as the binary. That is this step: binaries and source go up as assets of one release,
+      # in one call. They must never be split across two.
+      # ---------------------------------------------------------------------------------
+      - name: Create the GitHub Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = '${{ steps.version.outputs.version }}'
+          ./tools/release-notes.ps1 -Version $version -OutFile artifacts/RELEASE-NOTES.md
+
+          # .md is deliberately absent from the filter: the notes are the release body, not an asset.
+          $assets = Get-ChildItem artifacts -File |
+            Where-Object { $_.Extension -in '.zip', '.txt' } |
+            ForEach-Object { $_.FullName }
+
+          $ghArgs = @(
+            'release', 'create', '${{ github.ref_name }}'
+            '--title', "TinyWin $version"
+            '--notes-file', 'artifacts/RELEASE-NOTES.md'
+          )
+          if ('${{ steps.version.outputs.prerelease }}' -eq 'True') { $ghArgs += '--prerelease' }
+
+          gh release create @ghArgs @assets
+          if ($LASTEXITCODE -ne 0) { throw 'gh release create failed.' }
