@@ -4,19 +4,20 @@ Living scratchpad for the parallel build. Updated as worktrees land.
 
 Last updated: 2026-07-22.
 
-## Landed on `main`
+## Milestones
 
-**M0 — skeleton & contracts.** Complete. `dotnet build` clean, `dotnet test` 19/19 green.
+| | Milestone | State |
+|---|---|---|
+| **M0** | Skeleton & contracts | **Done.** |
+| **M0.5** | Spikes (DISM backend, ISO builder) | **Done.** Both merged, both corrected the plan. |
+| **M1** | Vertical slice, headless | **Code complete.** `tinywin build` wires all 13 stages over the real backends. Cannot be *executed* here — DISM needs elevation. |
+| **M2** | Engines | **Done.** Imaging, registry, ISO builder and unattend all merged. |
+| **M3** | Catalog | **Done.** 73 components, 4 presets, validated against real 25H2 media. |
+| **M4** | UI | In flight (`ui-shell`). |
+| **M5** | Portable packaging | In flight (`packaging`). |
+| **M6** | Hardening | In flight (`hardening`). |
 
-- Solution `tinywin.slnx` (.NET 10 defaults to the `.slnx` format), 8 projects.
-- `TinyWin.Catalog` — component/preset model, `ActionValidator`, `CatalogValidator`,
-  `PlanResolver` (requires-closure, conflict detection, build-range warnings, action ordering).
-- `TinyWin.Core` — `IImagingBackend`, `IOfflineRegistry`/`IHiveSession`, `IIsoBuilder`,
-  `IUnattendGenerator`, the 14-stage `BuildStageId`, `BuildPipeline` with reverse-order rollback.
-- `catalog/` — 8 seed components + 4 presets, encoding the §8 decisions.
-- `tests/` — `FakeImagingBackend` plus catalog, resolver and pipeline-rollback suites.
-- `TinyWin.Cli` — `catalog`, `presets`, `doctor`.
-- CI — Windows build + unit tests on push/PR.
+`dotnet build` clean · **490 tests passing** · catalog validator clean.
 
 ## Environment facts
 
@@ -24,76 +25,57 @@ Last updated: 2026-07-22.
 |---|---|
 | .NET SDK | 10.0.302 |
 | Host OS | Windows 11 build 26200 (25H2) — matches the primary target |
-| Test media | `C:\Users\Zachary\ISOs\Win11_25H2_English_x64_v2.iso`, mounted read-only at `D:` |
-| `install.wim` | **7.06 GB** — confirms UDF is mandatory for the rebuilt ISO, not theoretical |
-| Boot files | `D:\boot\etfsboot.com` and `D:\efi\microsoft\boot\efisys.bin` both present |
-| Windows ADK | **Not installed** — so the xorriso path matters |
-| Elevation | **Agent shells are NOT elevated.** `dism` fails with error 740. |
-| Disk | ~795 GB free on `C:` |
+| Test media | `C:\Users\Zachary\ISOs\Win11_25H2_English_x64_v2.iso`, mounts at `D:` |
+| `install.wim` | 7.06 GB — real multi-extent case, not synthetic |
+| Windows ADK | Not installed, so the xorriso path is the one that matters |
+| **Elevation** | **Agent shells are NOT elevated.** `dism` fails with error 740. |
+| **Hyper-V** | **Disabled.** The ISO boot test is deferred until it is enabled. |
 
-### The elevation constraint
+## Ground truth captured from real media
 
-This is the single biggest limit on autonomous progress. DISM, Hyper-V VM creation and offline
-hive loading all require elevation, and agents cannot self-elevate without a UAC prompt. Every
-worktree has therefore been briefed to:
+`docs/reference/` holds an elevated capture from the 25H2 ISO — real
+`/Get-ProvisionedAppxPackages` (293 lines), capabilities (855), features (201), packages (581),
+the TaskCache tree, and the offline SOFTWARE/SYSTEM/NTUSER hives.
 
-1. put command construction, output parsing and marshalling behind a testable seam, and unit test
-   those thoroughly;
-2. write a ready-to-run elevated verification script under `scripts/`;
-3. state plainly in its findings what is proven versus what is unverified.
+**The progress question is settled.** DISM rewrites its progress bar with **bare CR**, no
+backspaces, and percentages *are* present under stdout redirection (202 CR, 0 BS, 98 percent
+tokens). `DismExeBackend` can report real percentages rather than only stage transitions.
 
-**When you are back at the machine, running those scripts in an elevated shell is the highest-value
-thing you can do** — it converts a pile of inference into verified behaviour.
+## What the verification actually found
 
-## Spikes — both complete and merged
+The catalog was verified with 7-Zip, which reads WIM files unelevated — so most of the work did
+not need admin after all. It found that **~13 packages tiny11builder removes no longer exist** on
+26100/26200 (`Microsoft.XboxApp`, `WindowsMaps`, `People`, `windowscommunicationsapps`,
+`ZuneVideo`, the 3D stack, Cortana, `Getstarted`, `MicrosoftTeams`), plus the WordPad and Fax/Scan
+capabilities. Every one would have been a silent no-op.
 
-### `docs/spikes/dism-backend.md` — confirmed the plan, for a stronger reason
+`Windows-Defender-Client-Package` does not exist either, so Defender is removed by directory,
+service and policy instead of as a CBS package.
 
-- **`Microsoft.Dism` 6.0.0 already wraps the undocumented provisioned-appx exports**, and
-  wraps them correctly. `PInvokeAppxBackend` is struck from the plan. Hand-rolling it invited a
-  silent bug: `dismapi.h` uses `#pragma pack(push, 1)`, so the obvious `LayoutKind.Sequential`
-  struct gets a 72-byte stride against a real 68 — yielding a plausible-but-wrong package list
-  rather than a clean crash.
-- **`dism.exe` is permanently mandatory, not a fallback.** Neither `StartComponentCleanup`/
-  `ResetBase` nor `Export-Image` exists as *any* export in `dismapi.dll`. The whole table was
-  checked. `ManagedDismBackend` therefore becomes a partial override composing over
-  `DismExeBackend`, not a peer.
-- Appx methods have no progress or cancellation overloads, so per-package progress belongs to
-  Core's stage engine.
-- `DismGetRegistryMountPoint` exists — flagged to `registry-engine` as a possible alternative to
-  hand-rolled `RegLoadKey`.
+**Scheduled tasks are a registry operation**, not a filesystem one: an offline image ships only
+nine task files and the rest materialise at setup from `TaskCache` in the SOFTWARE hive.
+`RemoveScheduledTask` was routed to `ApplyRegistryStage` accordingly.
 
-### `docs/spikes/iso-build.md` — conditional GO, and it falsified a plan premise
+## Known deviations and open risks
 
-- **xorriso cannot write UDF in any configuration** — the filesystem is unimplemented in
-  libisofs, not a missing flag. Had UDF truly been required this would have been a hard no.
-- **It isn't required.** ISO 9660 level 3 multi-extent holds a 4.7 GiB member file, and
-  Windows' own `cdfs.sys` reads it back with a matching SHA-256 across the 4 GiB boundary.
-  The real requirement is **ISO 9660 level 3 + Joliet**.
-- `-J -joliet-long` is mandatory and the alternatives are traps: `-untranslated-filenames`
-  *silently* truncates at 37 characters, which inspects clean and ships broken.
-- Boot geometry must be read from the source ISO (`-report_el_torito as_mkisofs`); xorriso
-  silently accepts a wrong `-boot-load-size`.
-- The MSYS2 build takes `/cygdrive/...` paths only, and drags a wider GPL corresponding-source
-  obligation than expected (`msys-2.0.dll`, readline, ncurses, iconv, zlib, bzip2).
-- Escape hatch if the boot test fails: `DISM /Split-Image /FileSize:4000` into `install.swm`.
+- **xorriso ignores `-boot-load-size` for the UEFI entry.** Real media declares `1`; xorriso always
+  writes the full image size (`2880`). Four option orderings were tried. `IsoVerification` treats
+  the BIOS mismatch as an error and the UEFI difference as a reported warning. Risk judged low,
+  but it is a genuine deviation from Microsoft's media and **only the boot test settles it**.
+- **xorriso cannot read a Windows 11 ISO** (they are UDF-only), so extraction is done another way,
+  and content verification is skipped for `oscdimg` output and says so.
+- **`estimatedSavingsMb` is uncompressed footprint**, while the UI shows an ISO estimate. LZX is
+  roughly 3–4:1, so a naive subtraction goes negative on the Core preset.
+- Registry actions remain the least-verified part of the catalog; `docs/reference/` now provides
+  the data to audit them against.
 
-**One gate remains for the ISO path: an actual Hyper-V boot test**, which needs elevation.
-The checklist is §9 of the spike doc.
+## The remaining gate
 
-## In flight
+**Enable Hyper-V, then run `docs/spikes/iso-build.md` §9 step 5.**
 
-| Worktree | Owns | Notes |
-|---|---|---|
-| `catalog-authoring` | `catalog/*.json` | Expand 8 seed components to ~40. Pure data. |
-| `unattend-generator` | `src/TinyWin.Unattend` | `autounattend.xml` + golden tests. Fully testable unelevated. |
-| `registry-engine` | `src/TinyWin.Registry` | Hive session, privilege enabling, unload-retry. Evaluating `DismGetRegistryMountPoint` first. |
-| `imaging-engine` | `src/TinyWin.Imaging` | `DismExeBackend` — now known to be permanent, not a stopgap. |
-| `iso-builder` | `src/TinyWin.IsoBuilder` | Launched after the spike verdict, implementing its §11 work list. |
-| `ui-shell` | `src/TinyWin.App` | WinUI 3. Templates are not installed, so the csproj is hand-authored. |
+```powershell
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All -All   # elevated, reboots
+```
 
-## Next
-
-- **M1 vertical slice** — the milestone that actually matters: ISO in, mount, remove 3 appx,
-  unmount, rebuild, boot in Hyper-V. Needs `imaging-engine` + `iso-builder` + **elevation**.
-- Both spike branches are merged; their worktrees can be archived.
+That is the only unclosed question on the ISO path, and the UEFI load-size deviation above is
+exactly what it would catch.
