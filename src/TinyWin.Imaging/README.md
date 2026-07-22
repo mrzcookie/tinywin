@@ -58,16 +58,27 @@ This path is exercised heavily and correctly: roughly 13 of the packages tiny11b
 longer exist on 26100/26200 at all.
 
 **Catalog names resolve to DISM names.** The catalog says `Microsoft.BingNews`; DISM demands
-`Microsoft.BingNews_4.55.62231.0_neutral_~_8wekyb3d8bbwe`. Capability and package identities embed
+`Microsoft.BingNews_4.1.24002.0_neutral_~_8wekyb3d8bbwe`. Capability and package identities embed
 versions that move between builds. The backend resolves the short form against what DISM listed, so
 the catalog carries no version strings that would rot on every servicing update.
 
-**Progress handles all three encodings, and the absence of any.** DISM renders its bar by rewriting
-one line, and the spike could not determine whether that survives stdout redirection as backspaces,
-bare carriage returns, or not at all. `DismOutputReader` decodes all three; when none arrive,
-`SawPercentage` stays false and `DismStageProgress` falls back to bounded stage-transition movement
-so a silent 40-minute `/ResetBase` does not look identical to a hang. `scripts/Verify-DismBackend.ps1`
-records which encoding a real DISM actually uses.
+A short name can match several identities, and on real 26200 media it routinely does: `/Get-Packages`
+lists the same package base name twice — `Staged` at one version, `Installed` at another, staged
+first — and `Language.Basic` matches ~100 locales of which one is installed. Resolution therefore
+ranks installed states above staged ones rather than taking the first match, which would otherwise
+make the result depend on DISM's ordering.
+
+**Progress is carriage-return driven, and percentages do survive redirection.** This was the open
+question in the spike (§5), and `docs/reference/02-progress-encoding.txt` answers it from a real
+`/Mount-Wim` on DISM 10.0.26100.8737: **0 backspaces, 202 CR, 104 LF, 98 percent tokens.** The bar
+rewrites its line with a bare `\r`, and every percentage reaches the pipe — so the Build page can
+show real progress, not just stage transitions.
+
+`DismOutputReader` still decodes all three possible encodings, because one data point on one DISM
+build is not a guarantee for every future one. When no percentage arrives, `SawPercentage` stays
+false and `DismStageProgress` falls back to bounded stage-transition movement, so a silent 40-minute
+`/ResetBase` never looks identical to a hang. `DismOutputReaderTests` replays the real 98-repaint
+stream byte for byte.
 
 **Cancellation kills the child process tree** — `dism.exe` spawns `DismHost.exe`, and killing only
 the parent leaves the mount held — and leaves the image mounted so the caller can unwind with

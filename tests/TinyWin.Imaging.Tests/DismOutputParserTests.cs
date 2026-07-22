@@ -108,11 +108,23 @@ public class DismOutputParserTests
     {
         var packages = DismOutputParser.ParseProvisionedAppx(Samples.ProvisionedAppx);
 
-        Assert.Equal(13, packages.Count);
+        Assert.Equal(48, packages.Count);
 
         var news = packages.Single(p => p.DisplayName == "Microsoft.BingNews");
-        Assert.Equal("Microsoft.BingNews_4.55.62231.0_neutral_~_8wekyb3d8bbwe", news.PackageName);
-        Assert.Equal("4.55.62231.0", news.Version);
+        Assert.Equal("Microsoft.BingNews_4.1.24002.0_neutral_~_8wekyb3d8bbwe", news.PackageName);
+        Assert.Equal("4.1.24002.0", news.Version);
+    }
+
+    /// <summary>
+    /// The line "Getting the list of app packages (.appx or .appxbundle) in this image..." sits
+    /// between the banner and the records and is not a field. It must not become one.
+    /// </summary>
+    [Fact]
+    public void The_appx_preamble_is_not_mistaken_for_a_record()
+    {
+        var packages = DismOutputParser.ParseProvisionedAppx(Samples.ProvisionedAppx);
+
+        Assert.All(packages, p => Assert.DoesNotContain("Getting the list", p.PackageName, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -120,12 +132,22 @@ public class DismOutputParserTests
     {
         var capabilities = DismOutputParser.ParseCapabilities(Samples.Capabilities);
 
-        Assert.Equal(
-            DismComponentState.Installed,
-            capabilities["Media.WindowsMediaPlayer~~~~0.0.12.0"]);
-        Assert.Equal(
-            DismComponentState.Absent,
-            capabilities["Browser.InternetExplorer~~~~0.0.11.0"]);
+        Assert.Equal(425, capabilities.Count);
+        Assert.Equal(DismComponentState.Installed, capabilities["Media.WindowsMediaPlayer~~~~0.0.12.0"]);
+        Assert.Equal(DismComponentState.Absent, capabilities["Print.Fax.Scan~~~~0.0.1.0"]);
+    }
+
+    /// <summary>
+    /// A capability identity can end in bare tildes with no version at all. Assuming a version
+    /// suffix always follows would drop these.
+    /// </summary>
+    [Fact]
+    public void Capability_identities_without_a_version_suffix_are_parsed()
+    {
+        var capabilities = DismOutputParser.ParseCapabilities(Samples.Capabilities);
+
+        Assert.Equal(DismComponentState.Installed, capabilities["WMIC~~~~"]);
+        Assert.Equal(DismComponentState.Absent, capabilities["AzureArcSetup~~~~"]);
     }
 
     [Fact]
@@ -133,49 +155,73 @@ public class DismOutputParserTests
     {
         var features = DismOutputParser.ParseFeatures(Samples.Features);
 
+        Assert.Equal(98, features.Count);
         Assert.Equal(DismComponentState.Enabled, features["WorkFolders-Client"]);
         Assert.Equal(DismComponentState.Disabled, features["Printing-XPSServices-Features"]);
-        Assert.Equal(DismComponentState.DisabledWithPayloadRemoved, features["TelnetClient"]);
+
+        // NetFx3 is the only payload-removed feature on stock 26200 media.
+        Assert.Equal(DismComponentState.DisabledWithPayloadRemoved, features["NetFx3"]);
     }
 
     [Fact]
-    public void Package_states_include_superseded_and_staged()
+    public void Package_states_include_staged()
     {
         var packages = DismOutputParser.ParsePackages(Samples.Packages);
 
-        Assert.Equal(5, packages.Count);
-        Assert.Equal(
-            DismComponentState.Installed,
-            packages["Microsoft-Windows-Foundation-Package~31bf3856ad364e35~amd64~~10.0.26200.8037"]);
-        Assert.Equal(
-            DismComponentState.Superseded,
-            packages["Microsoft-Windows-InternetExplorer-Optional-Package~31bf3856ad364e35~amd64~~11.0.26200.8037"]);
+        Assert.Equal(144, packages.Count);
         Assert.Equal(
             DismComponentState.Staged,
-            packages["Microsoft-Windows-WordPad-FoD-Package~31bf3856ad364e35~amd64~~10.0.26200.8037"]);
+            packages["Microsoft-OneCore-ApplicationModel-Sync-Desktop-FOD-Package~31bf3856ad364e35~amd64~~10.0.26100.1742"]);
+        Assert.Equal(
+            DismComponentState.Installed,
+            packages["Microsoft-OneCore-ApplicationModel-Sync-Desktop-FOD-Package~31bf3856ad364e35~amd64~~10.0.26100.8036"]);
     }
 
     /// <summary>
-    /// "Install Time : 12/2/2025 3:21:15 PM" contains colons. Splitting on the first ':' rather than
-    /// the first " : " would truncate it — and worse, would mis-split any value that happened to
-    /// start with a time.
+    /// "Install Time : 3/6/2026 11:54 PM" contains a colon. Splitting on the first ':' rather than
+    /// the first " : " would truncate it — and worse, would mis-split any value starting with a time.
     /// </summary>
     [Fact]
     public void Values_containing_colons_survive()
     {
         var records = DismOutputParser.ParseRecords(Samples.Packages, "Package Identity");
 
-        Assert.Equal("12/2/2025 3:21:15 PM", records[0].Get("Install Time"));
+        Assert.Equal("3/6/2026 11:54 PM", records[1].Get("Install Time"));
     }
 
+    /// <summary>
+    /// Staged packages have "Install Time : " with nothing after it. Present-but-empty must not
+    /// read as absent, or a record's fields shift.
+    /// </summary>
     [Fact]
     public void An_empty_field_parses_as_empty_not_missing()
     {
-        var records = DismOutputParser.ParseRecords(Samples.ProvisionedAppx, "PackageName");
-        var clipchamp = records[0];
+        var records = DismOutputParser.ParseRecords(Samples.Packages, "Package Identity");
 
-        Assert.True(clipchamp.Has("Regions"));
-        Assert.Equal(string.Empty, clipchamp.Get("Regions"));
+        Assert.True(records[0].Has("Install Time"));
+        Assert.Equal(string.Empty, records[0].Get("Install Time"));
+        Assert.Equal("OnDemand Pack", records[0].Get("Release Type"));
+    }
+
+    /// <summary>
+    /// The Copilot and Outlook entries carry a long semicolon-delimited region list on a single
+    /// line. Compared against the raw line rather than a hard-coded length, so the assertion stays
+    /// true when the samples are refreshed from newer media.
+    /// </summary>
+    [Fact]
+    public void A_very_long_single_line_value_is_not_truncated()
+    {
+        var records = DismOutputParser.ParseRecords(Samples.ProvisionedAppx, "PackageName");
+        var copilot = records.Single(r => r.Get("DisplayName") == "Microsoft.Copilot");
+
+        var lines = Samples.ProvisionedAppx.Split('\n').Select(l => l.TrimEnd('\r')).ToList();
+        var start = lines.FindIndex(l => l == "DisplayName : Microsoft.Copilot");
+        var expected = lines
+            .Skip(start)
+            .First(l => l.StartsWith("Regions : ", StringComparison.Ordinal))["Regions : ".Length..];
+
+        Assert.Equal(expected, copilot.Get("Regions"));
+        Assert.True(expected.Length > 700, "Sanity: the region list should be hundreds of characters.");
     }
 
     [Fact]

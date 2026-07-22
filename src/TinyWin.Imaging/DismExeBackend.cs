@@ -404,6 +404,14 @@ public sealed class DismExeBackend : IImagingBackend, IDisposable
     /// (<c>Browser.InternetExplorer~~~~0.0.11.0</c>) that differs between builds, so a catalog
     /// pinning the full string would break on every servicing update.
     /// </summary>
+    /// <remarks>
+    /// A prefix can match several identities, and on real 26200 media it routinely does:
+    /// <c>/Get-Packages</c> lists the same package base name twice, <c>Staged</c> at one version and
+    /// <c>Installed</c> at another, and <c>Language.Basic</c> matches a hundred locales of which one
+    /// is installed. Taking the first match would make the result depend on DISM's ordering and
+    /// could report <see cref="ActionStatus.NoTarget"/> for a component that is installed under a
+    /// different version suffix. Actionable states therefore win.
+    /// </remarks>
     internal static bool TryResolveIdentity(
         IReadOnlyDictionary<string, DismComponentState> known,
         string requested,
@@ -417,20 +425,36 @@ public sealed class DismExeBackend : IImagingBackend, IDisposable
         }
 
         var prefix = requested + "~";
+        var found = false;
+        identity = requested;
+        state = DismComponentState.Absent;
+
         foreach (var candidate in known)
         {
-            if (candidate.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            if (!candidate.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!found || Rank(candidate.Value) > Rank(state))
             {
                 identity = candidate.Key;
                 state = candidate.Value;
-                return true;
+                found = true;
             }
         }
 
-        identity = requested;
-        state = DismComponentState.Absent;
-        return false;
+        return found;
     }
+
+    /// <summary>How much a state deserves to win a tie between identities sharing a base name.</summary>
+    private static int Rank(DismComponentState state) => state switch
+    {
+        DismComponentState.Installed or DismComponentState.Enabled => 3,
+        DismComponentState.Staged or DismComponentState.Superseded => 2,
+        DismComponentState.Other => 1,
+        _ => 0,
+    };
 
     private ImageInventory GetInventory(MountedImage image) =>
         _inventories.GetOrAdd(

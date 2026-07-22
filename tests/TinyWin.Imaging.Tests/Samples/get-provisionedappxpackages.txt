@@ -1,100 +1,345 @@
 
 Deployment Image Servicing and Management tool
-Version: 10.0.26100.8457
+Version: 10.0.26100.8737
 
 Image Version: 10.0.26200.8037
 
-Packages listing:
+Getting the list of app packages (.appx or .appxbundle) in this image...
 
 DisplayName : Clipchamp.Clipchamp
-Version : 3.1.10520.0
+Version : 4.4.10720.0
 Architecture : neutral
 ResourceId : ~
-PackageName : Clipchamp.Clipchamp_3.1.10520.0_neutral_~_yxz26nhyzhsrt
-Regions :
+PackageName : Clipchamp.Clipchamp_4.4.10720.0_neutral_~_yxz26nhyzhsrt
+Regions : all
+
+DisplayName : Microsoft.ApplicationCompatibilityEnhancements
+Version : 1.2511.9.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.ApplicationCompatibilityEnhancements_1.2511.9.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.AV1VideoExtension
+Version : 2.0.6.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.AV1VideoExtension_2.0.6.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.AVCEncoderVideoExtension
+Version : 1.1.21.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.AVCEncoderVideoExtension_1.1.21.0_neutral_~_8wekyb3d8bbwe
+Regions : all
 
 DisplayName : Microsoft.BingNews
-Version : 4.55.62231.0
+Version : 4.1.24002.0
 Architecture : neutral
 ResourceId : ~
-PackageName : Microsoft.BingNews_4.55.62231.0_neutral_~_8wekyb3d8bbwe
+PackageName : Microsoft.BingNews_4.1.24002.0_neutral_~_8wekyb3d8bbwe
 Regions : all
 
 DisplayName : Microsoft.BingSearch
-Version : 1.1.10.0
+Version : 2022.1.43.0
 Architecture : neutral
 ResourceId : ~
-PackageName : Microsoft.BingSearch_1.1.10.0_neutral_~_8wekyb3d8bbwe
+PackageName : Microsoft.BingSearch_2022.1.43.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.BingWeather
+Version : 4.54.63017.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.BingWeather_4.54.63017.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.Copilot
+Version : 0.25061.2.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.Copilot_0.25061.2.0_neutral_~_8wekyb3d8bbwe
+Regions : AD;AE;AF;AG;AI;AL;AM;AO;AQ;AR;AS;AT;AU;AW;AX;AZ;BA;BB;BD;BE;BF;BG;BH;BI;BJ;BL;BM;BN;BO;BQ;BR;BS;BT;BV;BW;BZ;CA;CC;CD;CF;CG;CH;CI;CK;CL;CM;CO;CR;CV;CW;CX;CY;CZ;DE;DJ;DK;DM;DO;DZ;EC;EE;EG;ER;ES;ET;FI;FJ;FK;FM;FO;FR;GA;GB;GD;GE;GF;GG;GH;GI;GL;GM;GN;GP;GQ;GR;GS;GT;GU;GW;GY;HK;HM;HN;HR;HT;HU;ID;IE;IL;IM;IN;IO;IQ;IS;IT;JE;JM;JO;JP;KE;KG;KH;KI;KM;KN;KR;KW;KY;KZ;LA;LB;LC;LI;LK;LR;LS;LT;LU;LV;LY;MA;MC;MD;ME;MF;MG;MH;MK;ML;MM;MN;MO;MP;MQ;MR;MS;MT;MU;MV;MW;MX;MY;MZ;NA;NC;NE;NF;NG;NI;NL;NO;NP;NR;NU;NZ;OM;PA;PE;PF;PG;PH;PK;PL;PM;PN;PR;PS;PT;PW;PY;QA;RE;RO;RS;RW;SA;SB;SC;SD;SE;SG;SH;SI;SJ;SK;SL;SM;SN;SO;SR;SS;ST;SV;SX;SZ;TC;TD;TF;TG;TH;TJ;TK;TL;TM;TN;TO;TR;TT;TV;TW;TZ;UA;UG;UM;US;UY;UZ;VA;VC;VE;VG;VI;VN;VU;WF;WS;XK;YE;YT;ZA;ZM;ZW
+
+DisplayName : Microsoft.DesktopAppInstaller
+Version : 2025.926.104.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.DesktopAppInstaller_2025.926.104.0_neutral_~_8wekyb3d8bbwe
 Regions : all
 
 DisplayName : Microsoft.GamingApp
-Version : 2407.1001.7.0
-Architecture : x64
-ResourceId :
-PackageName : Microsoft.GamingApp_2407.1001.7.0_x64__8wekyb3d8bbwe
+Version : 2025.523.601.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.GamingApp_2025.523.601.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.GetHelp
+Version : 10.2407.40222.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.GetHelp_10.2407.40222.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.HEIFImageExtension
+Version : 1.2.28.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.HEIFImageExtension_1.2.28.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.HEVCVideoExtension
+Version : 2.4.39.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.HEVCVideoExtension_2.4.39.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.MicrosoftSolitaireCollection
+Version : 4.24.12040.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.MicrosoftSolitaireCollection_4.24.12040.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.MicrosoftStickyNotes
+Version : 6.1.5.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.MicrosoftStickyNotes_6.1.5.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.MPEG2VideoExtension
+Version : 1.2.13.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.MPEG2VideoExtension_1.2.13.0_neutral_~_8wekyb3d8bbwe
 Regions : all
 
 DisplayName : Microsoft.OutlookForWindows
-Version : 1.2024.522.400
-Architecture : x64
-ResourceId :
-PackageName : Microsoft.OutlookForWindows_1.2024.522.400_x64__8wekyb3d8bbwe
-Regions : all
+Version : 1.0.0.0
+Architecture : neutral
+ResourceId : 
+PackageName : Microsoft.OutlookForWindows_1.0.0.0_neutral__8wekyb3d8bbwe
+Regions : AD;AE;AF;AG;AI;AL;AM;AO;AQ;AR;AS;AT;AU;AW;AX;AZ;BA;BB;BD;BE;BF;BG;BH;BI;BJ;BL;BM;BN;BO;BQ;BR;BS;BT;BV;BW;BY;BZ;CA;CC;CD;CF;CG;CH;CI;CK;CL;CM;CO;CR;CU;CV;CW;CX;CY;CZ;DE;DJ;DK;DM;DO;DZ;EC;EE;EG;ER;ES;ET;FI;FJ;FK;FM;FO;FR;GA;GB;GD;GE;GF;GG;GH;GI;GL;GM;GN;GP;GQ;GR;GS;GT;GU;GW;GY;HK;HM;HN;HR;HT;HU;ID;IE;IL;IM;IN;IO;IQ;IR;IS;IT;JE;JM;JO;JP;KE;KG;KH;KI;KM;KN;KP;KR;KW;KY;KZ;LA;LB;LC;LI;LK;LR;LS;LT;LU;LV;LY;MA;MC;MD;ME;MF;MG;MH;MK;ML;MM;MN;MO;MP;MQ;MR;MS;MT;MU;MV;MW;MX;MY;MZ;NA;NC;NE;NF;NG;NI;NL;NO;NP;NR;NU;NZ;OM;PA;PE;PF;PG;PH;PK;PL;PM;PN;PR;PS;PT;PW;PY;QA;RE;RO;RS;RU;RW;SA;SB;SC;SD;SE;SG;SH;SI;SJ;SK;SL;SM;SN;SO;SR;SS;ST;SV;SX;SY;SZ;TC;TD;TF;TG;TH;TJ;TK;TL;TM;TN;TO;TR;TT;TV;TW;TZ;UA;UG;UM;US;UY;UZ;VA;VC;VE;VG;VI;VN;VU;WF;WS;XK;YE;YT;ZA;ZM;ZW
 
 DisplayName : Microsoft.Paint
-Version : 11.2405.14.0
+Version : 11.2412.295.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.Paint_11.2412.295.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.PowerAutomateDesktop
+Version : 11.2511.178.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.PowerAutomateDesktop_11.2511.178.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.RawImageExtension
+Version : 2.5.7.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.RawImageExtension_2.5.7.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.ScreenSketch
+Version : 2022.2307.61.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.ScreenSketch_2022.2307.61.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.SecHealthUI
+Version : 1000.26100.8036.0
 Architecture : x64
-ResourceId :
-PackageName : Microsoft.Paint_11.2405.14.0_x64__8wekyb3d8bbwe
+ResourceId : 
+PackageName : Microsoft.SecHealthUI_1000.26100.8036.0_x64__8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.StorePurchaseApp
+Version : 22509.1400.1.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.StorePurchaseApp_22509.1400.1.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.Todos
+Version : 2.153.5851.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.Todos_2.153.5851.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.VP9VideoExtensions
+Version : 1.2.12.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.VP9VideoExtensions_1.2.12.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WebMediaExtensions
+Version : 2.1.23.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WebMediaExtensions_2.1.23.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WebpImageExtension
+Version : 1.2.14.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WebpImageExtension_1.2.14.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.Windows.DevHome
+Version : 0.1701.597.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.Windows.DevHome_0.1701.597.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.Windows.Photos
+Version : 24.24070.23002.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.Windows.Photos_24.24070.23002.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WindowsAlarms
+Version : 2021.2510.4.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WindowsAlarms_2021.2510.4.0_neutral_~_8wekyb3d8bbwe
 Regions : all
 
 DisplayName : Microsoft.WindowsCalculator
-Version : 11.2405.2.0
-Architecture : x64
-ResourceId :
-PackageName : Microsoft.WindowsCalculator_11.2405.2.0_x64__8wekyb3d8bbwe
+Version : 2021.2502.2.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WindowsCalculator_2021.2502.2.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WindowsCamera
+Version : 2022.2510.2.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WindowsCamera_2022.2510.2.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WindowsFeedbackHub
+Version : 2024.125.1522.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WindowsFeedbackHub_2024.125.1522.0_neutral_~_8wekyb3d8bbwe
 Regions : all
 
 DisplayName : Microsoft.WindowsNotepad
-Version : 11.2404.10.0
-Architecture : x64
-ResourceId :
-PackageName : Microsoft.WindowsNotepad_11.2404.10.0_x64__8wekyb3d8bbwe
+Version : 11.2501.31.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WindowsNotepad_11.2501.31.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WindowsSoundRecorder
+Version : 2021.2510.0.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WindowsSoundRecorder_2021.2510.0.0_neutral_~_8wekyb3d8bbwe
 Regions : all
 
 DisplayName : Microsoft.WindowsStore
-Version : 22406.1401.2.0
-Architecture : x64
-ResourceId :
-PackageName : Microsoft.WindowsStore_22406.1401.2.0_x64__8wekyb3d8bbwe
+Version : 22506.1400.2.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WindowsStore_22506.1400.2.0_neutral_~_8wekyb3d8bbwe
 Regions : all
 
 DisplayName : Microsoft.WindowsTerminal
-Version : 3001.19.10143.0
-Architecture : x64
-ResourceId :
-PackageName : Microsoft.WindowsTerminal_3001.19.10143.0_x64__8wekyb3d8bbwe
+Version : 3001.18.10301.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.WindowsTerminal_3001.18.10301.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.Xbox.TCUI
+Version : 1.23.28005.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.Xbox.TCUI_1.23.28005.0_neutral_~_8wekyb3d8bbwe
 Regions : all
 
 DisplayName : Microsoft.XboxGamingOverlay
-Version : 7.124.5142.0
-Architecture : x64
-ResourceId :
-PackageName : Microsoft.XboxGamingOverlay_7.124.5142.0_x64__8wekyb3d8bbwe
+Version : 7.325.7221.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.XboxGamingOverlay_7.325.7221.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.XboxIdentityProvider
+Version : 12.130.2510.6003
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.XboxIdentityProvider_12.130.2510.6003_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.XboxSpeechToTextOverlay
+Version : 1.117.15001.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.XboxSpeechToTextOverlay_1.117.15001.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.YourPhone
+Version : 1.25112.39.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.YourPhone_1.25112.39.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.ZuneMusic
+Version : 11.2510.7.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.ZuneMusic_11.2510.7.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : MicrosoftCorporationII.MicrosoftFamily
+Version : 0.2.103.0
+Architecture : neutral
+ResourceId : ~
+PackageName : MicrosoftCorporationII.MicrosoftFamily_0.2.103.0_neutral_~_8wekyb3d8bbwe
 Regions : all
 
 DisplayName : MicrosoftCorporationII.QuickAssist
-Version : 2024.610.1444.0
+Version : 2025.331.2057.0
 Architecture : neutral
 ResourceId : ~
-PackageName : MicrosoftCorporationII.QuickAssist_2024.610.1444.0_neutral_~_8wekyb3d8bbwe
+PackageName : MicrosoftCorporationII.QuickAssist_2025.331.2057.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : MicrosoftWindows.Client.WebExperience
+Version : 525.31002.150.9
+Architecture : neutral
+ResourceId : ~
+PackageName : MicrosoftWindows.Client.WebExperience_525.31002.150.9_neutral_~_cw5n1h2txyewy
+Regions : all
+
+DisplayName : MicrosoftWindows.CrossDevice
+Version : 1.25112.60.0
+Architecture : neutral
+ResourceId : ~
+PackageName : MicrosoftWindows.CrossDevice_1.25112.60.0_neutral_~_cw5n1h2txyewy
 Regions : all
 
 DisplayName : MSTeams
-Version : 24193.1805.3040.8975
+Version : 1.0.0.0
 Architecture : x64
-ResourceId :
-PackageName : MSTeams_24193.1805.3040.8975_x64__8wekyb3d8bbwe
-Regions : all
+ResourceId : 
+PackageName : MSTeams_1.0.0.0_x64__8wekyb3d8bbwe
+Regions : AD;AE;AF;AG;AI;AL;AM;AO;AQ;AR;AS;AT;AU;AW;AX;AZ;BA;BB;BD;BE;BF;BG;BH;BI;BJ;BL;BM;BN;BO;BQ;BR;BS;BT;BV;BW;BY;BZ;CA;CC;CD;CF;CG;CH;CI;CK;CL;CM;CO;CR;CU;CV;CW;CX;CY;CZ;DE;DJ;DK;DM;DO;DZ;EC;EE;EG;ER;ES;ET;FI;FJ;FK;FM;FO;FR;GA;GB;GD;GE;GF;GG;GH;GI;GL;GM;GN;GP;GQ;GR;GS;GT;GU;GW;GY;HK;HM;HN;HR;HT;HU;ID;IE;IL;IM;IN;IO;IQ;IR;IS;IT;JE;JM;JO;JP;KE;KG;KH;KI;KM;KN;KP;KR;KW;KY;KZ;LA;LB;LC;LI;LK;LR;LS;LT;LU;LV;LY;MA;MC;MD;ME;MF;MG;MH;MK;ML;MM;MN;MO;MP;MQ;MR;MS;MT;MU;MV;MW;MX;MY;MZ;NA;NC;NE;NF;NG;NI;NL;NO;NP;NR;NU;NZ;OM;PA;PE;PF;PG;PH;PK;PL;PM;PN;PR;PS;PT;PW;PY;QA;RE;RO;RS;RU;RW;SA;SB;SC;SD;SE;SG;SH;SI;SJ;SK;SL;SM;SN;SO;SR;SS;ST;SV;SX;SY;SZ;TC;TD;TF;TG;TH;TJ;TK;TL;TM;TN;TO;TR;TT;TV;TW;TZ;UA;UG;UM;US;UY;UZ;VA;VC;VE;VG;VI;VN;VU;WF;WS;XK;YE;YT;ZA;ZM;ZW
 
 The operation completed successfully.
