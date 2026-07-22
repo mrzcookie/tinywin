@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(TinyWinTargetFramework)</TargetFramework>
+    <RootNamespace>TinyWin.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit.v3" Version="3.1.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TinyWin.Core\TinyWin.Core.csproj" />
+    <ProjectReference Include="..\..\src\TinyWin.Catalog\TinyWin.Catalog.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tests validate the real shipped catalog, not a fixture copy. -->
+    <None Include="..\..\catalog\**\*.json" CopyToOutputDirectory="PreserveNewest" LinkBase="catalog" />
+  </ItemGroup>
+
+</Project>
