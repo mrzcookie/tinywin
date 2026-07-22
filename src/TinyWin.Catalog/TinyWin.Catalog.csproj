@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(TinyWinTargetFramework)</TargetFramework>
+    <RootNamespace>TinyWin.Catalog</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The shipped catalog travels with the assembly so the single-file exe is self-sufficient. -->
+    <EmbeddedResource Include="..\..\catalog\**\*.json" LinkBase="Catalog" />
+  </ItemGroup>
+
+</Project>
