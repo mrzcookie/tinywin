@@ -1,0 +1,100 @@
+
+Deployment Image Servicing and Management tool
+Version: 10.0.26100.8457
+
+Image Version: 10.0.26200.8037
+
+Packages listing:
+
+DisplayName : Clipchamp.Clipchamp
+Version : 3.1.10520.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Clipchamp.Clipchamp_3.1.10520.0_neutral_~_yxz26nhyzhsrt
+Regions :
+
+DisplayName : Microsoft.BingNews
+Version : 4.55.62231.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.BingNews_4.55.62231.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.BingSearch
+Version : 1.1.10.0
+Architecture : neutral
+ResourceId : ~
+PackageName : Microsoft.BingSearch_1.1.10.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.GamingApp
+Version : 2407.1001.7.0
+Architecture : x64
+ResourceId :
+PackageName : Microsoft.GamingApp_2407.1001.7.0_x64__8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.OutlookForWindows
+Version : 1.2024.522.400
+Architecture : x64
+ResourceId :
+PackageName : Microsoft.OutlookForWindows_1.2024.522.400_x64__8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.Paint
+Version : 11.2405.14.0
+Architecture : x64
+ResourceId :
+PackageName : Microsoft.Paint_11.2405.14.0_x64__8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WindowsCalculator
+Version : 11.2405.2.0
+Architecture : x64
+ResourceId :
+PackageName : Microsoft.WindowsCalculator_11.2405.2.0_x64__8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WindowsNotepad
+Version : 11.2404.10.0
+Architecture : x64
+ResourceId :
+PackageName : Microsoft.WindowsNotepad_11.2404.10.0_x64__8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WindowsStore
+Version : 22406.1401.2.0
+Architecture : x64
+ResourceId :
+PackageName : Microsoft.WindowsStore_22406.1401.2.0_x64__8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.WindowsTerminal
+Version : 3001.19.10143.0
+Architecture : x64
+ResourceId :
+PackageName : Microsoft.WindowsTerminal_3001.19.10143.0_x64__8wekyb3d8bbwe
+Regions : all
+
+DisplayName : Microsoft.XboxGamingOverlay
+Version : 7.124.5142.0
+Architecture : x64
+ResourceId :
+PackageName : Microsoft.XboxGamingOverlay_7.124.5142.0_x64__8wekyb3d8bbwe
+Regions : all
+
+DisplayName : MicrosoftCorporationII.QuickAssist
+Version : 2024.610.1444.0
+Architecture : neutral
+ResourceId : ~
+PackageName : MicrosoftCorporationII.QuickAssist_2024.610.1444.0_neutral_~_8wekyb3d8bbwe
+Regions : all
+
+DisplayName : MSTeams
+Version : 24193.1805.3040.8975
+Architecture : x64
+ResourceId :
+PackageName : MSTeams_24193.1805.3040.8975_x64__8wekyb3d8bbwe
+Regions : all
+
+The operation completed successfully.

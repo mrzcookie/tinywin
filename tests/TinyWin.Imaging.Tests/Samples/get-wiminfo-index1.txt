@@ -1,0 +1,29 @@
+
+Deployment Image Servicing and Management tool
+Version: 10.0.26100.8457
+
+Details for image : D:\sources\install.wim
+
+Index : 1
+Name : Windows 11 Home
+Description : Windows 11 Home
+Size : 23,831,001,491 bytes
+WIM Bootable : No
+Architecture : x64
+Hal : <undefined>
+Version : 10.0.26200
+ServicePack Build : 8037
+ServicePack Level : 0
+Edition : Core
+Installation : Client
+ProductType : WinNT
+ProductSuite : Terminal Server
+System Root : WINDOWS
+Directories : 32397
+Files : 141983
+Created : 3/6/2026 - 6:07:08 PM
+Modified : 
+Languages :
+	en-US (Default)
+
+The operation completed successfully.

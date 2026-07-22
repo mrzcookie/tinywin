@@ -1,0 +1,34 @@
+
+Deployment Image Servicing and Management tool
+Version: 10.0.26100.8457
+
+Image Version: 10.0.26200.8037
+
+Packages listing:
+
+Package Identity : Microsoft-Windows-Foundation-Package~31bf3856ad364e35~amd64~~10.0.26200.8037
+State : Installed
+Release Type : Foundation
+Install Time : 12/2/2025 3:21:15 PM
+
+Package Identity : Microsoft-Windows-InternetExplorer-Optional-Package~31bf3856ad364e35~amd64~~11.0.26200.8037
+State : Superseded
+Release Type : Feature Pack
+Install Time : 12/2/2025 3:24:02 PM
+
+Package Identity : Microsoft-Windows-LanguageFeatures-Basic-en-us-Package~31bf3856ad364e35~amd64~~10.0.26200.8037
+State : Installed
+Release Type : Language Pack
+Install Time : 12/2/2025 3:24:11 PM
+
+Package Identity : Microsoft-Windows-MediaPlayer-Package~31bf3856ad364e35~amd64~~10.0.26200.8037
+State : Installed
+Release Type : Feature Pack
+Install Time : 12/2/2025 3:24:19 PM
+
+Package Identity : Microsoft-Windows-WordPad-FoD-Package~31bf3856ad364e35~amd64~~10.0.26200.8037
+State : Staged
+Release Type : On Demand Pack
+Install Time : 12/2/2025 3:24:33 PM
+
+The operation completed successfully.
