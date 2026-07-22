@@ -20,6 +20,7 @@ internal static class Program
             "catalog" => await CatalogCommandAsync(args),
             "presets" => await PresetsCommandAsync(),
             "doctor" => Doctor(),
+            "build" => await BuildCommand.RunAsync(args, await LoadCatalogAsync()),
             _ => Help(),
         };
     }
@@ -114,8 +115,18 @@ internal static class Program
               tinywin catalog [--validate]   List catalog components, or validate them
               tinywin presets                Show each preset and what it resolves to
               tinywin doctor                 Check whether this machine can run a build
+              tinywin build --iso <path>     Build a customised ISO
 
-            The build command arrives with M1. See docs/PLAN.md.
+            build options:
+              --iso     <path>   Source Windows 11 ISO                        (required)
+              --out     <path>   Output ISO         (default: <source>-tiny.iso)
+              --preset  <id>     minimal | balanced | aggressive | core  (default: balanced)
+              --index   <n>      Edition index within install.wim              (default: 1)
+              --scratch <path>   Working directory, needs ~25 GB free
+              --dry-run          Resolve and print the plan without changing anything
+              --resume           Continue from the last checkpoint
+
+            Requires Administrator: DISM returns error 740 otherwise. See docs/PLAN.md.
             """);
         return 0;
     }
