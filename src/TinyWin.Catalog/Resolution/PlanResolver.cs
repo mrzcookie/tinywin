@@ -44,7 +44,6 @@ public static class PlanResolver
         ActionType.DisableFeature,
         ActionType.RemovePackage,
         ActionType.DisableService,
-        ActionType.RemoveScheduledTask,
         ActionType.TakeOwnership,
         ActionType.DeleteFile,
         ActionType.DeleteDirectory,
@@ -54,6 +53,13 @@ public static class PlanResolver
     [
         ActionType.SetRegistry,
         ActionType.DeleteRegistryKey,
+
+        // Scheduled tasks are a registry operation on this build family, not a filesystem one.
+        // An offline image ships only nine task definition files; everything else is materialised
+        // at setup from TaskCache in the SOFTWARE hive, so deleting task files would mostly delete
+        // nothing and the task would still appear after OOBE.
+        // See docs/catalog-gaps.md section 3.1 and docs/registry-findings.md section 2.
+        ActionType.RemoveScheduledTask,
     ];
 
     public static ResolvedPlan Resolve(

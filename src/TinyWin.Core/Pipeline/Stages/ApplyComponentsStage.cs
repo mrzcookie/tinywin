@@ -116,7 +116,14 @@ public sealed class ApplyComponentsStage(IImagingBackend backend) : IBuildStage
                 break;
 
             case ActionType.RemoveScheduledTask:
-                results.Add(DeleteScheduledTask(image, resolved));
+                // Routed to ApplyRegistryStage by PlanResolver and should never arrive here.
+                // Deleting the task file would be wrong anyway: an offline image ships only nine
+                // task definitions, and the rest are materialised at setup from TaskCache in the
+                // SOFTWARE hive. See docs/catalog-gaps.md section 3.1.
+                results.Add(ActionOutcome.Failed(
+                    component,
+                    $"Remove scheduled task {action.Name}",
+                    "Scheduled task actions must be routed to the registry stage."));
                 break;
 
             case ActionType.DisableService:
@@ -213,37 +220,4 @@ public sealed class ApplyComponentsStage(IImagingBackend backend) : IBuildStage
         }
     }
 
-    private static ActionOutcome DeleteScheduledTask(MountedImage image, ResolvedAction resolved)
-    {
-        var name = resolved.Action.Name!.TrimStart('\\', '/');
-        var description = $"Remove scheduled task {name}";
-        var full = Path.GetFullPath(Path.Combine(image.MountPath, "Windows", "System32", "Tasks", name));
-        var root = Path.GetFullPath(Path.Combine(image.MountPath, "Windows", "System32", "Tasks"));
-
-        if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
-        {
-            return ActionOutcome.Failed(resolved.ComponentId, description, $"Task path escapes Tasks: '{name}'.");
-        }
-
-        try
-        {
-            if (Directory.Exists(full))
-            {
-                Directory.Delete(full, recursive: true);
-                return ActionOutcome.Applied(resolved.ComponentId, description);
-            }
-
-            if (!File.Exists(full))
-            {
-                return ActionOutcome.NoTarget(resolved.ComponentId, description);
-            }
-
-            File.Delete(full);
-            return ActionOutcome.Applied(resolved.ComponentId, description);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            return ActionOutcome.Failed(resolved.ComponentId, description, ex.Message);
-        }
-    }
 }

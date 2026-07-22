@@ -48,8 +48,17 @@ public sealed class ApplyRegistryStage(IOfflineRegistry registry) : IBuildStage
         var hives = actions
             .Select(a => a.Action.Hive)
             .OfType<RegistryHive>()
-            .Distinct()
             .ToList();
+
+        // A RemoveScheduledTask action carries no 'hive' field, deliberately — the registration is
+        // always in SOFTWARE, so requiring authors to state it would be noise they could get wrong.
+        // The stage supplies it instead. See docs/registry-findings.md section 2.
+        if (actions.Any(a => a.Action.Type == ActionType.RemoveScheduledTask))
+        {
+            hives.Add(RegistryHive.Software);
+        }
+
+        hives = [.. hives.Distinct()];
 
         if (hives.Count == 0)
         {
@@ -115,6 +124,7 @@ public sealed class ApplyRegistryStage(IOfflineRegistry registry) : IBuildStage
     {
         ActionType.SetRegistry => $"Set {action.Hive}\\{action.Key}\\{action.ValueName}",
         ActionType.DeleteRegistryKey => $"Delete {action.Hive}\\{action.Key}",
+        ActionType.RemoveScheduledTask => $"Remove scheduled task {action.Name}",
         _ => $"{action.Type} {action.Key}",
     };
 }
