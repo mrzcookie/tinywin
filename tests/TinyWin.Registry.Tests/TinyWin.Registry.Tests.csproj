@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      Windows-targeted, unlike TinyWin.Tests: TinyWin.Registry is net10.0-windows because it talks
+      to advapi32, and a net10.0 test project cannot reference it.
+    -->
+    <TargetFramework>$(TinyWinWindowsTargetFramework)</TargetFramework>
+    <RootNamespace>TinyWin.Registry.Tests</RootNamespace>
+    <SupportedOSPlatformVersion>$(TinyWinSupportedOSPlatformVersion)</SupportedOSPlatformVersion>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <AssemblyName>TinyWin.Registry.Tests</AssemblyName>
+    <!--
+      CA1861: constant array arguments. Every hit is an expected-value literal inside an
+      assertion, where hoisting it to a static field would move the expectation away from the
+      test that asserts it.
+    -->
+    <NoWarn>$(NoWarn);CA1861</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit.v3" Version="3.1.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TinyWin.Registry\TinyWin.Registry.csproj" />
+  </ItemGroup>
+
+</Project>
