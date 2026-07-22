@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "apps.xbox",
+      "name": "Xbox & Gaming",
+      "category": "Gaming",
+      "description": "Removes the Xbox app, Game Bar overlay, identity provider and TCUI. Xbox Console Companion and the old Game Overlay package no longer ship on this build family.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 71,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Game Bar screen recording and performance overlay are gone",
+        "Xbox achievements, cloud saves and Game Pass installs stop working",
+        "A few games that call the Xbox identity provider refuse to launch, usually with a sign-in error"
+      ],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": [
+            "Microsoft.XboxIdentityProvider",
+            "Microsoft.XboxSpeechToTextOverlay"
+          ]
+        },
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": [
+            "Microsoft.GamingApp",
+            "Microsoft.XboxGamingOverlay",
+            "Microsoft.Xbox.TCUI"
+          ],
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "gaming.gamedvr",
+      "name": "Game DVR & Game Mode capture",
+      "category": "Gaming",
+      "description": "Turns off background game recording and the capture pipeline by policy, without removing any app.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "SetRegistry",
+          "hive": "Software",
+          "key": "Policies\\Microsoft\\Windows\\GameDVR",
+          "valueName": "AllowGameDVR",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "System\\GameConfigStore",
+          "valueName": "GameDVR_Enabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+          "valueName": "AppCaptureEnabled",
+          "kind": "Dword",
+          "data": 0
+        },
+        {
+          "type": "SetRegistry",
+          "hive": "NtUser",
+          "key": "Software\\Microsoft\\GameBar",
+          "valueName": "UseNexusForGameBarEnabled",
+          "kind": "Dword",
+          "data": 0
+        }
+      ]
+    },
+    {
+      "id": "gaming.services",
+      "name": "Xbox Services",
+      "category": "Gaming",
+      "description": "Disables the four Xbox Live background services and the Xbox accessory service.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 0,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Any game using Xbox Live sign-in fails to authenticate, including Game Pass titles bought elsewhere",
+        "Xbox controllers still work as generic gamepads, but guide-button features and firmware updates do not",
+        "Cloud saves stop syncing, and local saves made afterwards will not reconcile later"
+      ],
+      "actions": [
+        { "type": "DisableService", "name": "XblAuthManager", "startType": 4 },
+        { "type": "DisableService", "name": "XblGameSave", "startType": 4 },
+        { "type": "DisableService", "name": "XboxNetApiSvc", "startType": 4 },
+        { "type": "DisableService", "name": "XboxGipSvc", "startType": 4, "optional": true }
+      ]
+    }
+  ]
+}

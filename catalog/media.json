@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "media.mediaplayer",
+      "name": "Media Player",
+      "category": "Media & Casual",
+      "description": "Removes the modern Media Player app, which still ships under the legacy ZuneMusic package name. Absent from N editions.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 36,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Audio and video files have no default player until you install one",
+        "Double-clicking an MP3 or MP4 opens the \"how do you want to open this\" picker with nothing in it"
+      ],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["Microsoft.ZuneMusic"],
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "media.photos",
+      "name": "Photos",
+      "category": "Media & Casual",
+      "description": "Removes the Photos app.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 31,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Image files have no default viewer — Windows Photo Viewer is still on the image but is not registered for any file type by default",
+        "Thumbnail previews in File Explorer still work, but there is nothing to open a picture in"
+      ],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.Windows.Photos"] }
+      ]
+    },
+    {
+      "id": "media.camera",
+      "name": "Camera",
+      "category": "Media & Casual",
+      "description": "Removes the Camera app.",
+      "risk": "Caution",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 23,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "No way to take a photo or test a webcam without third-party software",
+        "Windows Hello face enrolment still works; it does not use this app"
+      ],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.WindowsCamera"] }
+      ]
+    },
+    {
+      "id": "media.soundrecorder",
+      "name": "Sound Recorder",
+      "category": "Media & Casual",
+      "description": "Removes the Sound Recorder app. Absent from N editions.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 1,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["Microsoft.WindowsSoundRecorder"],
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "media.solitaire",
+      "name": "Solitaire Collection",
+      "category": "Media & Casual",
+      "description": "Removes the Microsoft Solitaire Collection, the largest single casual app on the image.",
+      "risk": "Safe",
+      "defaultIn": ["minimal", "balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 74,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.MicrosoftSolitaireCollection"] }
+      ]
+    },
+    {
+      "id": "media.paint",
+      "name": "Paint",
+      "category": "Media & Casual",
+      "description": "Removes Paint. It is an appx on this build family, not the capability it used to be.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 29,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "The Edit option on images in File Explorer and the Snipping Tool disappears",
+        "Nothing on the image can crop or annotate a screenshot afterwards"
+      ],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.Paint"] }
+      ]
+    },
+    {
+      "id": "media.snippingtool",
+      "name": "Snipping Tool",
+      "category": "Media & Casual",
+      "description": "Removes the Snipping Tool, which also owns the Print Screen and Win+Shift+S capture shortcuts.",
+      "risk": "Caution",
+      "defaultIn": ["aggressive", "core"],
+      "estimatedSavingsMb": 10,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "Win+Shift+S and the Print Screen key stop opening the capture overlay and do nothing at all",
+        "Screen recording and the built-in text extraction from screenshots are gone",
+        "Print Screen still copies the whole screen to the clipboard, which is the only capture left"
+      ],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.ScreenSketch"] }
+      ]
+    },
+    {
+      "id": "media.stickynotes",
+      "name": "Sticky Notes",
+      "category": "Media & Casual",
+      "description": "Removes the Sticky Notes app.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 1,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        { "type": "RemoveProvisionedAppx", "packages": ["Microsoft.MicrosoftStickyNotes"] }
+      ]
+    },
+    {
+      "id": "media.minorapps",
+      "name": "Alarms, To Do & Feedback extras",
+      "category": "Media & Casual",
+      "description": "Removes the small in-box utilities that most users never open: Clock/Alarms and Microsoft To Do.",
+      "risk": "Safe",
+      "defaultIn": ["balanced", "aggressive", "core"],
+      "estimatedSavingsMb": 3,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": ["Microsoft.WindowsAlarms", "Microsoft.Todos"]
+        }
+      ]
+    },
+    {
+      "id": "media.codecs",
+      "name": "Media Codec Extensions",
+      "category": "Media & Casual",
+      "description": "Removes the HEVC, AV1, VP9, MPEG-2, WebP, HEIF and RAW codec extensions. Core preset only. Absent from N editions, which never ship them.",
+      "risk": "Breaking",
+      "defaultIn": ["core"],
+      "estimatedSavingsMb": 38,
+      "appliesTo": { "minBuild": 26100, "maxBuild": 26299 },
+      "requires": [],
+      "conflicts": [],
+      "breaks": [
+        "HEIC photos from any iPhone will not open or generate thumbnails anywhere in Windows",
+        "HEVC and AV1 video fails to play in every app that relies on the system decoder, including browsers falling back to hardware decode",
+        "RAW files from most cameras lose Explorer thumbnails and previews",
+        "Some video editors and streaming apps refuse to launch when the system codec is missing rather than falling back to software"
+      ],
+      "actions": [
+        {
+          "type": "RemoveProvisionedAppx",
+          "packages": [
+            "Microsoft.HEIFImageExtension",
+            "Microsoft.HEVCVideoExtension",
+            "Microsoft.AV1VideoExtension",
+            "Microsoft.AVCEncoderVideoExtension",
+            "Microsoft.VP9VideoExtensions",
+            "Microsoft.MPEG2VideoExtension",
+            "Microsoft.RawImageExtension",
+            "Microsoft.WebpImageExtension",
+            "Microsoft.WebMediaExtensions"
+          ],
+          "optional": true
+        }
+      ]
+    }
+  ]
+}
