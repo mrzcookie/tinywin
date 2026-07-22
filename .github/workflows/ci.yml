@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Windows-only by necessity: the imaging and registry projects target net10.0-windows.
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore tinywin.slnx
+
+      - name: Build
+        run: dotnet build tinywin.slnx --no-restore --configuration Release
+
+      # Unit tests only. The integration suite needs elevation, ~25 GB of scratch space and a
+      # real Windows ISO, so it runs locally or on a self-hosted runner — see docs/PLAN.md §5.
+      - name: Test
+        run: dotnet test tinywin.slnx --no-build --configuration Release --logger "trx;LogFileName=results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/*.trx'
+          if-no-files-found: ignore
