@@ -1,0 +1,166 @@
+﻿Microsoft (R) COFF/PE Dumper Version 14.51.36248.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file C:\Windows\System32\dismapi.dll
+
+File Type: DLL
+
+  Section contains the following exports for DismApi.DLL
+
+    00000000 characteristics
+    20A9D33D time date stamp
+        0.00 version
+           1 ordinal base
+         136 number of functions
+         136 number of names
+
+    ordinal hint RVA      name
+
+          1    0 00039180 DismAddCapability
+          2    1 00039190 DismAddDriver
+          3    2 00039250 DismAddLanguage
+          4    3 00039350 DismAddPackage
+          5    4 0003A8F0 DismAddProvisionedAppxPackage
+          6    5 00039460 DismApplyUnattend
+          7    6 00039510 DismCheckImageHealth
+          8    7 000395B0 DismCleanupMountpoints
+          9    8 0000B190 DismCloseSession
+         10    9 00039610 DismCommitImage
+         11    A 0002EFB0 DismDelete
+         12    B 000396B0 DismDisableFeature
+         13    C 00039790 DismEnableFeature
+         14    D 000398A0 DismEnumerateRRMPs
+         15    E 000398B0 DismGetCapabilities
+         16    F 00024C20 DismGetCapabilityInfo
+         17   10 000398E0 DismGetDriverInfo
+         18   11 000399B0 DismGetDrivers
+         19   12 00039A40 DismGetFeatureInfo
+         20   13 00039B10 DismGetFeatureParent
+         21   14 00039BE0 DismGetFeatures
+         22   15 00039C80 DismGetImageInfo
+         23   16 00039D20 DismGetLastErrorMessage
+         24   17 00039D30 DismGetMountedImageInfo
+         25   18 00039DA0 DismGetPackageInfo
+         26   19 0003D760 DismGetPackageInfoEx
+         27   1A 00039E60 DismGetPackages
+         28   1B 0003AAE0 DismGetProvisionedAppxPackages
+         29   1C 00039EE0 DismGetRRMPAltitude
+         30   1D 00039EF0 DismGetRRMPInfo
+         31   1E 00039F00 DismGetRemoteManagementStatus
+         32   1F 00039F10 DismGetReservedStorageState
+         33   20 0000BA20 DismInitialize
+         34   21 00039F20 DismMountImage
+         35   22 00024B20 DismOpenSession
+         36   23 0003A010 DismRegisterRRMP
+         37   24 0003A020 DismRemountImage
+         38   25 0003A0B0 DismRemoveCapability
+         39   26 0003A0E0 DismRemoveDriver
+         40   27 0003A190 DismRemoveLanguage
+         41   28 0003A260 DismRemovePackage
+         42   29 0003AB60 DismRemoveProvisionedAppxPackage
+         43   2A 0003A340 DismRemoveRRMPAltitude
+         44   2B 0003A350 DismRestoreImageHealth
+         45   2C 0003A400 DismSetRRMPAltitude
+         46   2D 0003A410 DismSetRemoteManagementStatus
+         47   2E 0003A420 DismSetReservedStorageState
+         48   2F 0003A430 DismShutdown
+         49   30 0003A490 DismUnmountImage
+         50   31 0003A550 DismUnregisterRRMP
+         51   32 0003CE10 _DismAddAppxPackageFamilyToUninstallBlocklist
+         52   33 0003CE20 _DismAddDriverEx
+         53   34 0003CE30 _DismAddGenericAppPackage
+         54   35 0003D030 _DismAddGenericAppPackage2
+         55   36 0003D110 _DismAddNetAdapter
+         56   37 0003D120 _DismAddPackageEx
+         57   38 0003CE10 _DismAddPackageFamilyToUninstallBlocklist
+         58   39 0003D1E0 _DismAddProvisionedAppSharedPackageContainer
+         59   3A 0003A8F0 _DismAddProvisionedAppxPackage
+         60   3B 0003D1F0 _DismAddProvisionedAppxPackageEx
+         61   3C 0003D330 _DismAddProvisionedAppxPackageEx2
+         62   3D 0003D3C0 _DismApplyCustomDataImage
+         63   3E 0003D3D0 _DismApplyFfuImage
+         64   3F 0003D3F0 _DismApplyOsImage
+         65   40 0003D400 _DismApplyProvisioningPackage
+         66   41 0003D410 _DismCaptureOsImage
+         67   42 0003D420 _DismCaptureSoftwareInventory
+         68   43 0003D430 _DismCleanImage
+         69   44 0003D440 _DismEnableDisableFeature
+         70   45 0003D4C0 _DismExportDriver
+         71   46 0003D560 _DismExportOsImage
+         72   47 0003D570 _DismExportSource
+         73   48 0003D580 _DismGetCapabilitiesEx
+         74   49 0003D590 _DismGetCapabilityInfoEx
+         75   4A 0003D5A0 _DismGetCurrentEdition
+         76   4B 0003D610 _DismGetDriversEx
+         77   4C 0003D620 _DismGetEffectiveSystemUILanguage
+         78   4D 0003D630 _DismGetFeaturesEx
+         79   4E 0003D6E0 _DismGetInstallLanguage
+         80   4F 0003D6F0 _DismGetKCacheBinaryValue
+         81   50 0003D700 _DismGetKCacheDwordValue
+         82   51 0003D710 _DismGetKCacheStringValue
+         83   52 0003D720 _DismGetLastCBSSessionID
+         84   53 0003D730 _DismGetNonRemovableAppsPolicy
+         85   54 0003D730 _DismGetNonRemovableAppxAppsPolicy
+         86   55 0003D740 _DismGetOSUninstallWindow
+         87   56 0003D750 _DismGetOsInfo
+         88   57 0003D760 _DismGetPackageInfoEx
+         89   58 0003D770 _DismGetPackagesEx
+         90   59 0003D780 _DismGetProductKeyInfo
+         91   5A 0003D790 _DismGetProvisionedAppSharedPackageContainers
+         92   5B 0003AAE0 _DismGetProvisionedAppxPackages
+         93   5C 0003D7A0 _DismGetProvisioningPackageInfo
+         94   5D 0003D7B0 _DismGetRegistryMountPoint
+         95   5E 0003D7C0 _DismGetStateFromCBSSessionID
+         96   5F 0003D7D0 _DismGetTargetCompositionEditions
+         97   60 0003D7E0 _DismGetTargetEditions
+         98   61 0003D860 _DismGetTargetPath
+         99   62 0003D870 _DismGetTargetVirtualEditions
+        100   63 0003D880 _DismGetTemplateAbsolutePath
+        101   64 0003D890 _DismGetTemplateString
+        102   65 0003D8A0 _DismGetUsedSpace
+        103   66 0003D8B0 _DismInitiateOSUninstall
+        104   67 0003D8C0 _DismOpenSessionEx
+        105   68 0003D8D0 _DismOptimizeImage
+        106   69 0003D970 _DismOptimizeProvisionedAppxPackages
+        107   6A 0003D9E0 _DismRemoveAppxPackageFamilyFromUninstallBlocklist
+        108   6B 0003D9F0 _DismRemoveCapabilityEx
+        109   6C 0003DA00 _DismRemoveLanguageEx
+        110   6D 0003DA10 _DismRemoveOSUninstall
+        111   6E 0003DA20 _DismRemovePackageEx
+        112   6F 0003D9E0 _DismRemovePackageFamilyFromUninstallBlocklist
+        113   70 0003DB00 _DismRemoveProvisionedAppSharedPackageContainer
+        114   71 0003AB60 _DismRemoveProvisionedAppxPackage
+        115   72 0003DB10 _DismRemoveProvisionedAppxPackageAllUsers
+        116   73 0003DBC0 _DismRevertPendingActions
+        117   74 0003DBD0 _DismSetAllIntlSettings
+        118   75 0003DBE0 _DismSetAppXProvisionedDataFile
+        119   76 0003DBE0 _DismSetAppxProvisionedDataFile
+        120   77 0003DBF0 _DismSetEdition
+        121   78 0003DCA0 _DismSetEdition2
+        122   79 0003DCE0 _DismSetFirstBootCommandLine
+        123   7A 0003DD60 _DismSetIntlSettings
+        124   7B 0003DD70 _DismSetKeyboardLayeredDriver
+        125   7C 0003DD80 _DismSetMachineName
+        126   7D 0003DD90 _DismSetOSUninstallWindow
+        127   7E 0003DDA0 _DismSetProductKey
+        128   7F 0003DE10 _DismSetSkuIntlDefaults
+        129   80 0003DE20 _DismSetTargetPath
+        130   81 0003DE30 _DismSetTemplateString
+        131   82 0003DE40 _DismSplitFfuImage
+        132   83 0003DE60 _DismStage
+        133   84 0003DE70 _DismSysprepCleanup
+        134   85 0003DE80 _DismSysprepGeneralize
+        135   86 0003DE90 _DismSysprepSpecialize
+        136   87 0003DEA0 _DismValidateProductKey
+
+  Summary
+
+        4000 .data
+        1000 .didat
+        7000 .pdata
+       63000 .rdata
+        1000 .reloc
+        4000 .rsrc
+       CD000 .text
+        1000 fothk
