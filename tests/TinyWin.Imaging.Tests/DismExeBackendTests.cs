@@ -126,7 +126,7 @@ public class DismExeBackendTests
         Assert.Contains(
             runner.CommandLines,
             c => c.Contains(
-                @"/PackageName:""Microsoft.BingNews_4.55.62231.0_neutral_~_8wekyb3d8bbwe""",
+                @"/PackageName:""Microsoft.BingNews_4.1.24002.0_neutral_~_8wekyb3d8bbwe""",
                 StringComparison.Ordinal));
     }
 
@@ -159,11 +159,67 @@ public class DismExeBackendTests
         var runner = FullyStockedRunner();
         using var backend = NewBackend(runner);
 
-        // Browser.InternetExplorer is listed with State "Not Present" on 26200.
+        // Print.Fax.Scan is listed with State "Not Present" on stock 26200 media.
         Assert.Equal(
             ActionStatus.NoTarget,
-            await backend.RemoveCapabilityAsync(Image, "Browser.InternetExplorer~~~~0.0.11.0", Ct));
+            await backend.RemoveCapabilityAsync(Image, "Print.Fax.Scan~~~~0.0.1.0", Ct));
         Assert.Equal(0, runner.CountMatching("/Remove-Capability"));
+    }
+
+    /// <summary>
+    /// Worth pinning because I guessed wrong before the real capture arrived: Internet Explorer is
+    /// still <c>Installed</c> on 26200, not <c>Not Present</c>. Removing it is real work.
+    /// </summary>
+    [Fact]
+    public async Task Internet_explorer_is_still_installed_on_26200()
+    {
+        var runner = FullyStockedRunner();
+        using var backend = NewBackend(runner);
+
+        Assert.Equal(
+            ActionStatus.Applied,
+            await backend.RemoveCapabilityAsync(Image, "Browser.InternetExplorer~~~~0.0.11.0", Ct));
+    }
+
+    /// <summary>
+    /// The ambiguity real media exposed. <c>/Get-Packages</c> lists this base name twice — Staged at
+    /// 10.0.26100.1742 and Installed at 10.0.26100.8036, in that order. Resolving a short catalog
+    /// name by taking the first prefix match would pick the Staged one and act on the wrong version;
+    /// the installed identity has to win regardless of DISM's ordering.
+    /// </summary>
+    [Fact]
+    public async Task A_short_package_name_resolves_to_the_installed_identity_not_the_staged_one()
+    {
+        var runner = FullyStockedRunner();
+        using var backend = NewBackend(runner);
+
+        var status = await backend.RemovePackageAsync(
+            Image, "Microsoft-OneCore-ApplicationModel-Sync-Desktop-FOD-Package", Ct);
+
+        Assert.Equal(ActionStatus.Applied, status);
+        Assert.Contains(
+            runner.CommandLines,
+            c => c.Contains("~~10.0.26100.8036", StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            runner.CommandLines,
+            c => c.Contains("~~10.0.26100.1742", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// The same hazard for capabilities: ~100 <c>Language.Basic~~~&lt;locale&gt;</c> identities are
+    /// listed and exactly one is installed. A short name must find it rather than the first locale
+    /// in the list.
+    /// </summary>
+    [Fact]
+    public async Task A_short_capability_name_finds_the_one_installed_locale()
+    {
+        var runner = FullyStockedRunner();
+        using var backend = NewBackend(runner);
+
+        Assert.Equal(ActionStatus.Applied, await backend.RemoveCapabilityAsync(Image, "Language.Basic", Ct));
+        Assert.Contains(
+            runner.CommandLines,
+            c => c.Contains(@"/CapabilityName:""Language.Basic~~~en-US~0.0.1.0""", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -253,6 +309,7 @@ public class DismExeBackendTests
         Assert.Contains(runner.CommandLines, c => c.Contains("/Remove", StringComparison.Ordinal));
     }
 
+    /// <summary>NetFx3 is the only payload-removed feature on stock 26200 media.</summary>
     [Fact]
     public async Task A_feature_already_stripped_of_its_payload_is_NoTarget()
     {
@@ -261,7 +318,7 @@ public class DismExeBackendTests
 
         Assert.Equal(
             ActionStatus.NoTarget,
-            await backend.DisableFeatureAsync(Image, "TelnetClient", removePayload: true, Ct));
+            await backend.DisableFeatureAsync(Image, "NetFx3", removePayload: true, Ct));
     }
 
     [Fact]
@@ -285,7 +342,9 @@ public class DismExeBackendTests
         Assert.Equal(
             ActionStatus.Applied,
             await backend.RemovePackageAsync(
-                Image, "Microsoft-Windows-MediaPlayer-Package~31bf3856ad364e35~amd64~~10.0.26200.8037", Ct));
+                Image,
+                "Microsoft-OneCore-ApplicationModel-Sync-Desktop-FOD-Package~31bf3856ad364e35~amd64~~10.0.26100.8036",
+                Ct));
     }
 
     /// <summary>

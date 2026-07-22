@@ -58,6 +58,48 @@ public class DismOutputReaderTests
         Assert.Equal([0.10, 0.25, 1.0], _progress);
     }
 
+    /// <summary>
+    /// The encoding real DISM 10.0.26100.8737 actually uses, decoded from a real <c>/Mount-Wim</c>.
+    /// </summary>
+    /// <remarks>
+    /// This is the answer to the question docs/spikes/dism-backend.md §5 left open. The capture in
+    /// docs/reference/02-progress-encoding.txt counted 0 backspaces, 202 CR and 104 LF with 98
+    /// percent tokens: the bar is carriage-return driven and <b>percentages do survive stdout
+    /// redirection</b>, so the Build page can show real progress rather than only stage transitions.
+    /// </remarks>
+    [Fact]
+    public void The_real_mount_progress_stream_decodes_to_every_percentage()
+    {
+        var reader = NewReader();
+
+        reader.Append(Samples.MountProgressAsRawStream());
+        reader.Complete();
+
+        Assert.True(reader.SawPercentage);
+        Assert.Equal(98, _progress.Count);
+        Assert.Equal(0.01, _progress[0], 5);
+        Assert.Equal(1.0, _progress[^1], 5);
+
+        // Monotonic: a bar that goes backwards would make the UI look broken.
+        Assert.Equal(_progress, [.. _progress.Order()]);
+    }
+
+    /// <summary>
+    /// The 98 repaints must not reach the log pane, and the stage text around them must.
+    /// </summary>
+    [Fact]
+    public void The_real_mount_stream_logs_stage_text_but_not_the_bar()
+    {
+        var reader = NewReader();
+
+        reader.Append(Samples.MountProgressAsRawStream());
+        reader.Complete();
+
+        Assert.Contains("Mounting image", _lines);
+        Assert.Contains("The operation completed successfully.", _lines);
+        Assert.DoesNotContain(_lines, l => l.Contains('%', StringComparison.Ordinal));
+    }
+
     /// <summary>Encoding 2: the bar is redrawn with a bare carriage return and no line feed.</summary>
     [Fact]
     public void Carriage_return_driven_progress_is_decoded()
