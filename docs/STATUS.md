@@ -69,6 +69,16 @@ nine task files and the rest materialise at setup from `TaskCache` in the SOFTWA
 - Registry actions remain the least-verified part of the catalog; `docs/reference/` now provides
   the data to audit them against.
 
+## Known issues
+
+- **Stage order deviates from the plan.** `BuildPipelineFactory` runs `StageFilesStage` before
+  `InspectIsoStage`, so unsupported media is rejected only *after* a ~7 GB copy. §2.2 specifies
+  inspect-then-stage. Cause: `InspectIsoStage` was written to read the staged tree rather than the
+  source ISO. Assigned to the `hardening` worktree, which owns Core.
+- **`PcaPatchDbTask` and `RetailDemo\CleanupOfflineContent`** are in the catalog but absent from
+  real 26200 media. Both are `optional: true`, so they report `NoTarget` quietly — correct, but
+  they are dead weight and could be dropped.
+
 ## The remaining gate
 
 **Enable Hyper-V, then run `docs/spikes/iso-build.md` §9 step 5.**
