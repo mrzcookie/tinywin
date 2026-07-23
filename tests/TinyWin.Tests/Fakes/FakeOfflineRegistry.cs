@@ -28,6 +28,9 @@ public sealed class FakeOfflineRegistry : IOfflineRegistry
 
     public int StrandedHivesToReport { get; set; }
 
+    /// <summary>Runs before each apply, so a test can cancel while a hive session is open.</summary>
+    public Action? OnApply { get; set; }
+
     public bool AllSessionsDisposed => Sessions.All(s => s.Disposed);
 
     public Task<IHiveSession> OpenAsync(
@@ -40,7 +43,7 @@ public sealed class FakeOfflineRegistry : IOfflineRegistry
             return Task.FromException<IHiveSession>(OpenFailure);
         }
 
-        var session = new FakeHiveSession(hives, _applied, MissingKeys);
+        var session = new FakeHiveSession(hives, _applied, MissingKeys) { OnApply = OnApply };
         Sessions.Add(session);
         return Task.FromResult<IHiveSession>(session);
     }
@@ -58,12 +61,17 @@ public sealed class FakeHiveSession(
 
     public bool Disposed { get; private set; }
 
+    public Action? OnApply { get; init; }
+
     public Task<ActionStatus> ApplyAsync(
         string componentId, ComponentAction action, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(action);
 
         ObjectDisposedException.ThrowIf(Disposed, this);
+
+        OnApply?.Invoke();
+        cancellationToken.ThrowIfCancellationRequested();
 
         sink.Add(action);
 
