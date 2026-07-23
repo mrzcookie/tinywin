@@ -1,3 +1,5 @@
+using TinyWin.Core.Pipeline;
+
 namespace TinyWin.Core.Models;
 
 /// <summary>
@@ -24,6 +26,16 @@ public sealed record ActionOutcome
     public required ActionStatus Status { get; init; }
     public string? Detail { get; init; }
     public TimeSpan Duration { get; init; }
+
+    /// <summary>
+    /// The stage that produced this outcome, stamped by the pipeline.
+    /// </summary>
+    /// <remarks>
+    /// Carried so a resumed run can keep the outcomes of stages it skips and drop the ones it is
+    /// about to redo — otherwise every action across a resume would be counted twice and the no-op
+    /// number stops meaning anything. Null when a stage was driven outside the pipeline.
+    /// </remarks>
+    public BuildStageId? Stage { get; init; }
 
     public static ActionOutcome Applied(string componentId, string description, TimeSpan duration = default) =>
         new() { ComponentId = componentId, Description = description, Status = ActionStatus.Applied, Duration = duration };
