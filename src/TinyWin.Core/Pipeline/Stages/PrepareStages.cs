@@ -1,5 +1,7 @@
 using TinyWin.Core.Abstractions;
+using TinyWin.Core.Diagnostics;
 using TinyWin.Core.Models;
+using TinyWin.Core.Recovery;
 
 namespace TinyWin.Core.Pipeline.Stages;
 
@@ -34,13 +36,19 @@ public sealed class InspectIsoStage(IImagingBackend backend, IIsoBuilder isoBuil
 
         if (!File.Exists(image))
         {
-            throw new FileNotFoundException("Neither sources\\install.wim nor sources\\install.esd is present.", image);
+            throw new FileNotFoundException(
+                $"'{context.Request.SourceIsoPath}' has no sources\\install.wim or sources\\install.esd, " +
+                "so it is not Windows installation media. Check that the ISO is a Windows 11 installer " +
+                "rather than a recovery, driver or update disc.",
+                image);
         }
 
         var editions = await backend.GetEditionsAsync(image, cancellationToken).ConfigureAwait(false);
         if (editions.Count == 0)
         {
-            throw new InvalidDataException("The image contains no editions.");
+            throw new InvalidDataException(
+                $"DISM reported no editions in '{image}'. The image is probably truncated — re-download " +
+                "or re-copy the source ISO and try again.");
         }
 
         context.InstallWimPath = image;
@@ -54,7 +62,10 @@ public sealed class InspectIsoStage(IImagingBackend backend, IIsoBuilder isoBuil
 
         var selected = editions.FirstOrDefault(e => e.Index == context.Request.EditionIndex)
             ?? throw new ArgumentOutOfRangeException(
-                nameof(context), $"Edition index {context.Request.EditionIndex} is not in this image.");
+                nameof(context),
+                $"Edition index {context.Request.EditionIndex} is not in this image. It has " +
+                $"{editions.Count}: {string.Join(", ", editions.Select(e => $"{e.Index} = {e.Name}"))}. " +
+                "Choose one of those indexes.");
 
         // Refuse media we know we cannot service correctly; warn about media we merely have not
         // validated. See docs/PLAN.md section 1.
@@ -62,19 +73,29 @@ public sealed class InspectIsoStage(IImagingBackend backend, IIsoBuilder isoBuil
         {
             case MediaSupport.Unsupported:
                 throw new NotSupportedException(
-                    $"Build {selected.Build} is older than 24H2 (26100) and is past end of updates. " +
-                    "TinyWin supports 24H2 and 25H2.");
+                    $"Build {selected.Build} is older than 24H2 (26100) and is past end of updates for " +
+                    "Home and Pro. TinyWin supports 24H2 (26100) and 25H2 (26200); download current " +
+                    "media and build from that instead.");
 
             case MediaSupport.Unverified:
                 context.Warn(
                     $"Build {selected.Build} is newer than the validated range (26100-26299). " +
-                    "The catalog has not been checked against it, so some removals may find no target.");
+                    "The catalog has not been checked against it, so some removals may find no target. " +
+                    "Check the no-target count in the build report before using the result.");
                 break;
         }
 
         context.BootGeometry = await isoBuilder
             .ReadBootGeometryAsync(context.Request.SourceIsoPath, cancellationToken)
             .ConfigureAwait(false);
+
+        if (context.BootGeometry is null)
+        {
+            context.Warn(
+                "Could not read the El Torito boot geometry from the source ISO, so the rebuild will use " +
+                "the values from stock 25H2 media. If the finished ISO does not boot, that assumption is " +
+                "the first thing to check — see docs/findings/iso-builder.md section 2.1.");
+        }
 
         progress.Report(new BuildProgress
         {
@@ -86,7 +107,11 @@ public sealed class InspectIsoStage(IImagingBackend backend, IIsoBuilder isoBuil
 }
 
 /// <summary>Copies the ISO contents to the scratch directory so they can be modified.</summary>
-public sealed class StageFilesStage(IIsoBuilder isoBuilder) : IBuildStage
+/// <remarks>
+/// The single most expensive stage, and the reason resumability is worth having at all: ~8 GB of
+/// copying that a resumed run must never repeat.
+/// </remarks>
+public sealed class StageFilesStage(IIsoBuilder isoBuilder, IBuildEnvironment environment) : IBuildStage
 {
     public BuildStageId Id => BuildStageId.StageFiles;
 
@@ -100,6 +125,15 @@ public sealed class StageFilesStage(IIsoBuilder isoBuilder) : IBuildStage
 
         var staged = Path.Combine(context.Request.ScratchDirectory, "iso");
         Directory.CreateDirectory(staged);
+
+        // The copy is the whole source ISO. Checking here as well as in preflight catches the case
+        // where something else on the machine consumed the volume in between.
+        var sourceSize = new FileInfo(context.Request.SourceIsoPath).Length;
+        DiskSpace.Require(
+            environment,
+            staged,
+            DiskSpace.Scale(sourceSize, DiskSpace.StagingOverhead),
+            "Copying the ISO contents");
 
         var relay = new Progress<double>(p => progress.Report(new BuildProgress
         {
@@ -121,7 +155,7 @@ public sealed class StageFilesStage(IIsoBuilder isoBuilder) : IBuildStage
 /// Converts install.esd to install.wim. ESD is solid-compressed and cannot be mounted for
 /// servicing, so this is mandatory when the source ships one.
 /// </summary>
-public sealed class NormalizeImageStage(IImagingBackend backend) : IBuildStage
+public sealed class NormalizeImageStage(IImagingBackend backend, IBuildEnvironment environment) : IBuildStage
 {
     public BuildStageId Id => BuildStageId.NormalizeImage;
 
@@ -137,6 +171,14 @@ public sealed class NormalizeImageStage(IImagingBackend backend) : IBuildStage
 
         var esd = context.InstallWimPath!;
         var wim = Path.Combine(Path.GetDirectoryName(esd)!, "install.wim");
+
+        // Solid compression unpacks to a much larger WIM, and both files exist until the export
+        // finishes. Running out here is the classic "died at 80% with a cryptic DISM error".
+        DiskSpace.Require(
+            environment,
+            wim,
+            DiskSpace.Scale(new FileInfo(esd).Length, DiskSpace.EsdToWimOverhead),
+            "Converting install.esd to install.wim");
 
         var relay = new Progress<double>(p => progress.Report(new BuildProgress
         {
@@ -193,11 +235,17 @@ public sealed class WriteUnattendStage(IUnattendGenerator generator) : IBuildSta
 }
 
 /// <summary>Confirms the output exists and reports the size delta.</summary>
+/// <remarks>
+/// Always re-runs, even on a resume that has nothing else left to do: it is seconds of work, and
+/// it is the only stage that checks the thing the user actually asked for still exists.
+/// </remarks>
 public sealed class VerifyStage : IBuildStage
 {
     public BuildStageId Id => BuildStageId.Verify;
 
     public string Title => "Verifying output";
+
+    public StageRecovery Recovery => StageRecovery.AlwaysRerun;
 
     public Task ExecuteAsync(
         BuildContext context, IProgress<BuildProgress> progress, CancellationToken cancellationToken)
@@ -208,7 +256,10 @@ public sealed class VerifyStage : IBuildStage
         var output = context.Request.OutputIsoPath;
         if (!File.Exists(output))
         {
-            throw new FileNotFoundException("The ISO builder reported success but produced no file.", output);
+            throw new FileNotFoundException(
+                $"The ISO builder reported success but '{output}' does not exist. Check that antivirus " +
+                "did not quarantine it, and that the output directory is writable.",
+                output);
         }
 
         var before = new FileInfo(context.Request.SourceIsoPath).Length;
@@ -216,14 +267,16 @@ public sealed class VerifyStage : IBuildStage
 
         if (after <= 0)
         {
-            throw new InvalidDataException("The output ISO is empty.");
+            throw new InvalidDataException(
+                $"'{output}' is empty. The ISO writer produced no content; re-run the build and check " +
+                "the log for the writer's own error output.");
         }
 
         progress.Report(new BuildProgress
         {
             Stage = Id,
             State = StageState.Running,
-            Message = $"{before / (1024 * 1024)} MB -> {after / (1024 * 1024)} MB",
+            Message = $"{ByteSize.Format(before)} -> {ByteSize.Format(after)}",
         });
 
         return Task.CompletedTask;

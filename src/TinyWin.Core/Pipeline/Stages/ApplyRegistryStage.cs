@@ -1,6 +1,7 @@
 using TinyWin.Catalog.Models;
 using TinyWin.Core.Abstractions;
 using TinyWin.Core.Models;
+using TinyWin.Core.Recovery;
 
 namespace TinyWin.Core.Pipeline.Stages;
 
@@ -21,6 +22,9 @@ public sealed class ApplyRegistryStage(IOfflineRegistry registry) : IBuildStage
     public BuildStageId Id => BuildStageId.ApplyRegistry;
 
     public string Title => "Applying registry changes";
+
+    /// <summary>Hive writes land inside the mount, so a discarded mount undoes all of them.</summary>
+    public StageRecovery Recovery => StageRecovery.Volatile;
 
     public bool ShouldRun(BuildContext context) =>
         context is not null && (context.Plan.RegistryActions.Count > 0 || HasServiceActions(context));
