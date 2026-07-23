@@ -1,6 +1,7 @@
 using TinyWin.Catalog.Resolution;
 using TinyWin.Core.Abstractions;
 using TinyWin.Core.Models;
+using TinyWin.Core.Recovery;
 
 namespace TinyWin.Core.Pipeline;
 
@@ -41,7 +42,23 @@ public sealed class BuildContext
     public IReadOnlyList<ActionOutcome> Outcomes => _outcomes;
     public IReadOnlyList<string> Warnings => _warnings;
 
-    public void Record(ActionOutcome outcome) => _outcomes.Add(outcome);
+    /// <summary>
+    /// The stage currently executing, set by <see cref="BuildPipeline"/>.
+    /// </summary>
+    /// <remarks>
+    /// Outcomes are stamped with it so a resumed run can keep the results of the stages it skips
+    /// and discard the results of the ones it redoes. Null when a stage is driven directly, as in
+    /// a unit test.
+    /// </remarks>
+    public BuildStageId? CurrentStage { get; set; }
+
+    public void Record(ActionOutcome outcome)
+    {
+        ArgumentNullException.ThrowIfNull(outcome);
+        _outcomes.Add(outcome.Stage is null && CurrentStage is not null
+            ? outcome with { Stage = CurrentStage }
+            : outcome);
+    }
 
     public void Warn(string message) => _warnings.Add(message);
 }
@@ -55,6 +72,13 @@ public interface IBuildStage
     BuildStageId Id { get; }
 
     string Title { get; }
+
+    /// <summary>
+    /// Whether this stage's completed work survives into a later run, and can therefore be skipped
+    /// on resume. Defaults to <see cref="StageRecovery.Durable"/>; anything writing into a mounted
+    /// image must say <see cref="StageRecovery.Volatile"/> instead.
+    /// </summary>
+    StageRecovery Recovery => StageRecovery.Durable;
 
     /// <summary>
     /// Whether this stage applies to the current request. Skipping is reported, never silent —
