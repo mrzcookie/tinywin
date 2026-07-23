@@ -14,11 +14,26 @@ Last updated: 2026-07-22.
 | **M2** | Engines | **Done.** Imaging, registry, ISO builder and unattend all merged. |
 | **M3** | Catalog | **Done.** 73 components, 4 presets, validated against real 25H2 media. |
 | **M4** | UI | **Done.** WinUI 3 shell, Home + the seven workflow pages, MVVM throughout. |
-| **M5** | Portable packaging | In flight (`packaging`). |
-| **M6** | Hardening | In flight (`hardening`). |
+| **M5** | Portable packaging | **Done.** Single-file publish verified against the merged app: 215.5 MB exe, 88 MB zip. |
+| **M6** | Hardening | **Done.** Resume/checkpointing, disk guards, failure advice, build report rendering. |
 
-**Release** build clean with the WinUI app in the solution · **504 tests passing** · catalog
+**All milestones complete.** The only unclosed item is the Hyper-V boot test, which needs a
+human — see the bottom of this file.
+
+**Release** build clean with the WinUI app in the solution · **567 tests passing** · catalog
 validator clean.
+
+## Hardening — what M6 actually added
+
+- **Checkpoint and resume.** A checkpoint is written after every stage and deleted on success, so
+  a run that dies in stage 11 does not re-copy 6 GB. Two details that took thought and are worth
+  keeping: a *skipped* stage is recorded as completed (otherwise `NormalizeImage`, which deletes
+  the ESD it was asked about, re-decides against stale context on resume), and the checkpoint is
+  written *after* rollback rather than before, so the resume logic knows the mount was discarded.
+- **`NoTargetRatio`, not just a count.** Twelve no-ops means something very different in a
+  20-action minimal build than in a 340-action core build, so the drift signal is a ratio.
+- **Cancelled is distinguished from failed.** Both leave `Succeeded` false, but only one is a bug.
+- **`FailureAdvice`** turns exceptions into what the user should do about them.
 
 The UI honours both corrections raised during the build: the Customize page separates the ISO-size
 estimate from the catalog's uncompressed payload figure, and the Review page requires typing
@@ -93,10 +108,21 @@ nine task files and the rest materialise at setup from `TaskCache` in the SOFTWA
 
 ## Known issues
 
-- **Stage order deviates from the plan.** `BuildPipelineFactory` runs `StageFilesStage` before
-  `InspectIsoStage`, so unsupported media is rejected only *after* a ~7 GB copy. §2.2 specifies
-  inspect-then-stage. Cause: `InspectIsoStage` was written to read the staged tree rather than the
-  source ISO. Assigned to the `hardening` worktree, which owns Core.
+- **Stage order deviates from the plan. Still open.** `BuildPipelineFactory` runs `StageFilesStage`
+  before `InspectIsoStage`, so unsupported media is rejected only *after* a ~7 GB copy. §2.2
+  specifies inspect-then-stage. Cause: `InspectIsoStage` reads the staged tree rather than the
+  source ISO.
+
+  It was assigned to the `hardening` worktree as an optional task and did not get done — that
+  agent was killed by a machine restart before reaching it. The fix needs `IIsoBuilder` to expose
+  a read-only ISO mount (`IsoImageMount` already exists but is `internal`), so `InspectIsoStage`
+  can enumerate editions from the source before anything is copied. `Mount-DiskImage` works
+  unelevated, so this is achievable; it was left alone rather than reopening the pipeline
+  immediately after a large merge.
+
+  A better variant is worth considering first: the WIM's own XML header carries the edition list
+  and can be read unelevated in milliseconds, with no mount and no DISM call at all — see the
+  known gaps in `src/TinyWin.Imaging/README.md`.
 - **`PcaPatchDbTask` and `RetailDemo\CleanupOfflineContent`** are in the catalog but absent from
   real 26200 media. Both are `optional: true`, so they report `NoTarget` quietly — correct, but
   they are dead weight and could be dropped.
