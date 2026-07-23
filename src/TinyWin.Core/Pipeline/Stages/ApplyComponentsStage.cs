@@ -3,6 +3,7 @@ using TinyWin.Catalog.Models;
 using TinyWin.Catalog.Resolution;
 using TinyWin.Core.Abstractions;
 using TinyWin.Core.Models;
+using TinyWin.Core.Recovery;
 
 namespace TinyWin.Core.Pipeline.Stages;
 
@@ -24,6 +25,9 @@ public sealed class ApplyComponentsStage(IImagingBackend backend) : IBuildStage
     public BuildStageId Id => BuildStageId.ApplyComponents;
 
     public string Title => "Removing components";
+
+    /// <summary>Everything here happens inside the mount, so a discarded mount undoes all of it.</summary>
+    public StageRecovery Recovery => StageRecovery.Volatile;
 
     public bool ShouldRun(BuildContext context) =>
         context is not null && context.Plan.ImageActions.Count > 0;
